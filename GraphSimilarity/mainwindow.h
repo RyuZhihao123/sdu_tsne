@@ -15,7 +15,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    QWidget* m_widget;
+    Widget* m_widget;
+
+signals:
+    void sig_aaa();
+
+private slots:
+    void slot_openGraph();
+    void slot_saveGraph();
+    void slot_calculateGraphLet();
+    void slot_btnNext();
 
 private:
     Ui::MainWindow *ui;

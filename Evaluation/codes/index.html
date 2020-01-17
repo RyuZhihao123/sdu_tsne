@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pilot study for color comparison</title>
+
+    <meta charset="utf-8">
+
+    <!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
+    <!-- Coding style based on http://gist.github.com/mbostock/5977197 -->
+
+    <style>
+        body {
+            font: 11px sans-serif;
+            text-align: center;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+        .dot {}
+
+        .em_dot {
+            stroke: #000;
+        }
+
+        .label {
+            font-size: 16px;
+        }
+
+        .frameBox {
+            display: inline-block;
+            border: 2px solid black;
+            padding: 0%;
+            /* line-height: height + margin.top + margin.bottom; */
+        }
+
+        .title {
+            font: 15px sans-serif;
+            /* left:0;
+            top:0;
+            right:0;
+            bottom:0; */
+            margin: auto;
+            float: left;
+        }
+
+        .frame {
+            /* display:table-cell; */
+            /* vertical-align:middle; */
+            display: inline-block;
+        }
+
+        .legend {
+            display: inline-block;
+        }
+
+        .centerBtn {
+            /* display:block; */
+            margin: 0 auto;
+            font-size: 20px;
+        }
+
+        .radios {
+            margin: 0 auto;
+            font-size: 20px;
+        }
+
+        .radios p {
+            font: bold;
+            font-size: 25px;
+        }
+
+        /* 方案一 ———— table*/
+        .container {
+            display: table;
+        }
+
+        .cell {
+            display: table-cell;
+        }
+
+        .cell>div {
+            margin: 5px;
+        }
+    </style>
+
+    <script type="text/javascript" src="js/global.js"></script>
+
+    <script type="text/javascript" src="js/lib/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/lib/d3.js"></script>
+    <script type="text/javascript" src="js/lib/flann.js"></script>
+    <script type="text/javascript" src="js/lib/hungarian.js"></script>
+
+    <script type="text/javascript" src="js/score.js"></script>
+    <script type="text/javascript" src="js/distance.js"></script>
+    <script type="text/javascript" src="js/util.js"></script>
+    <script type="text/javascript" src="js/random.js"></script>
+    <script type="text/javascript" src="js/GA.js"></script>
+    <script type="text/javascript" src="js/getSigmasAndScores.js"></script>
+
+
+</head>
+
+<body>
+    <div id="radios" class="radios">
+        <p>Choose the best assignment!</p>
+        <label for="select">
+            <input type="radio" name="assignment" id="select_0" value="0" checked> Assignment 1
+            &nbsp&nbsp&nbsp
+            <input type="radio" name="assignment" id="select_1" value="1"> Assignment 2
+            &nbsp&nbsp&nbsp
+            <input type="radio" name="assignment" id="select_2" value="2"> Assignment 3
+            &nbsp&nbsp&nbsp
+            <input type="radio" name="assignment" id="select_3" value="3"> Assignment 4
+            &nbsp&nbsp&nbsp
+            <input type="radio" name="assignment" id="select_4" value="NaN"> No idea
+        </label>
+    </div>
+    <br>
+    <br>
+
+    <button id="nextBtn" class="centerBtn" type="button">Next dataset</button>
+
+
+    <div class="container">
+        <!-- Four different assignment -->
+        <div>
+            <div class="cell no1">
+                <h1>Assignment 1</h1>
+                <div id="assign_0" class="frameBox">
+                </div>
+                <br>
+                <br>
+            </div>
+
+            <div class="cell no2">
+                <h1>Assignment 2</h1>
+                <div id="assign_1" class="frameBox">
+                </div>
+                <br>
+                <br>
+            </div>
+        </div>
+
+
+        <div>
+            <div class="cell no3">
+                <h1>Assignment 3</h1>
+                <div id="assign_2" class="frameBox">
+                </div>
+                <br>
+                <br>
+            </div>
+
+            <div class="cell no4">
+                <h1>Assignment 4</h1>
+                <div id="assign_3" class="frameBox">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+
+
+    <span id="minScore"></span>
+    <span id="maxScore"></span>
+    <span id="TableauScore"></span>
+    <span id="scoreVariance"></span><br />
+
+    <script type="text/javascript">
+        // const fs = require('fs');
+        var margin = { top: 20, right: 20, bottom: 30, left: 40 },
+            width = 350,
+            height = 180,
+            radius = 4;
+
+        /* 
+         * value accessor - returns the value to encode for a given data object.
+         * scale - maps value to a visual display encoding, such as a pixel position.
+         * map function - maps from data value to display value
+         * axis - sets up axis
+         */
+
+        // setup x 
+        var xValue = function (d) { return d.x; }, // data -> value
+            xScale = d3.scaleLinear().range([0, width]), // value -> display
+            xMap = function (d) { return xScale(xValue(d)); }; // data -> display
+
+        // setup y
+        var yValue = function (d) { return d.y; }, // data -> value
+            yScale = d3.scaleLinear().range([height, 0]), // value -> display
+            yMap = function (d) { return yScale(yValue(d)); }; // data -> display
+
+        // setup fill color
+        var cValue = function (d) { return d.label; };
+        //color = d3.scaleOrdinal(palettes);         // modified to change color palettes
+
+
+        // load data and draw 4 different assignments
+        // data7/data5.csv
+        // my_data/data3.csv
+
+
+        palettes = ["#70b3e9", "#4e79a7", "#e15759", "#e1a794", "#b8e9b4", "#08e927"]; // Yaoyu's palette
+        // let allData = ["data1.csv", "data2.csv", "data3.csv", "data4.csv", "data5.csv", "data6.csv", "data7.csv", "data8.csv", "data9.csv", "data10.csv", "data11.csv", "data12.csv", "data13.csv", "data14.csv", "data15.csv"];
+        let allData = ["data12.csv", "data6.csv", "data4.csv", "data1.csv", "data2.csv", "data3.csv", "data5.csv"];// data on the slides
+        let answers = [];
+
+
+        let idx = 0;
+        // Click next
+        $("#nextBtn").click(function () {
+            if (++idx < allData.length) {
+                console.log(idx);
+                readFile(idx);
+                answers.push($('input[name="assignment"]:checked').val());
+            }
+            // The last 
+            else {
+                $(this).attr({ "disabled": "disabled" });
+                console.log("Final answer: " + answers);
+                saveArray(answers);
+            }
+        });
+
+
+        function readFile(i) {
+            // Every time the user click next, change for the next
+            d3.text("data/" + allData[i], function (error, text) {
+                if (error) throw error;
+                var labelSet = new Set();
+                //parse pure text to data, and cast string to number
+                var data = d3.csvParseRows(text, function (d) {
+                    return d.map(Number);
+                }).map(function (d) { // change the array to an object, use the first two feature as the position
+                    var row = {};
+                    row.label = d[3];
+                    labelSet.add(d[3]);
+                    row.x = d[1];
+                    row.y = d[2];
+                    return row;
+                });
+                num = data.length / 2;
+
+                // Find min and max for x and y respectively
+                xScale.domain([d3.min(data, xValue), d3.max(data, xValue)]);
+                xAxis = d3.axisBottom().scale(xScale).ticks(0);
+
+                yScale.domain([d3.min(data, yValue), d3.max(data, yValue)]);
+                yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+                // 1. use Our algorithm solved by GA
+                // [label2class, sigma, score, info, scoreFunc, cdScoreFunc] = getTargetSigma(num, labelSet, data, width, height, radius,
+                //     (a, b) => a - b, (x) => x);// best
+                //(a, b) => b-a, (x)=>1/x);// worst
+                // $('#maxScore').text("ga max:" + score);
+                // $('#maxScore').text("max score:" + bestScore);
+
+                // 2. use our algorithm solved by brutal search
+                // [label2class, bestSigma, bestScore] = brutalSearch(num, labelSet, data, width, height, radius);
+
+                // 3. No algorithm applied
+                label2class = getVariables(num, labelSet, data, width, height, radius);
+
+                //console.log("sigma:" + bestSigma);
+
+                // for (let i = 0; i < ALL_SIGMA.length; i++) {
+                //     let sigma = ALL_SIGMA[i];
+                // }
+                let sigma0 = ALL_SIGMA[i][0];
+                let sigma1 = ALL_SIGMA[i][1];
+                let sigma2 = ALL_SIGMA[i][2];
+                let sigma3 = ALL_SIGMA[i][3];
+                console.log(sigma0);
+
+                drawAssignBox("#assign_0", sigma0);
+                drawAssignBox("#assign_1", sigma1);
+                drawAssignBox("#assign_2", sigma2);
+                drawAssignBox("#assign_3", sigma3);
+
+
+
+                console.log(data.length + ' ' + labelSet.size);
+            });
+        }
+
+
+        readFile(idx);
+
+
+        /* Here are some drawing functions */
+
+        // Draw scatterplot
+        function drawScatterplot(scatterplotSvg, data, palettes, sigma) {
+            // draw dots
+            var dots = scatterplotSvg.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("r", radius)
+                .attr("cx", xMap)
+                .attr("cy", yMap)
+                //.style("fill", "none")
+                .style("fill", function (d, i) {
+                    var j = sigma[label2class[cValue(d)]];
+                    return palettes[j];
+                })
+                .attr("id", function (d, i) {
+                    return "dot_" + label2class[cValue(d)];
+                });
+            //.text(function (d, i) { return i; });
+
+            // Add X axis
+            scatterplotSvg.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+            // Add Y axis
+            scatterplotSvg.append("g")
+                .call(yAxis);
+        }
+
+        // Draw legend
+        function drawLegend(legendSvg, palettes) {
+            legendSvg.selectAll(".palettes")
+                .data(palettes)
+                .enter().append("rect")
+                .attr("width", 20)
+                .attr("height", 20)
+                .attr("x", 10)
+                .attr("y", function (d, i) { return 25 * i; })
+                .attr("fill", function (d) { return d; })
+                .style("stroke", "#000");
+        }
+
+        // Draw assignment box
+        function drawAssignBox(box_id, sigma) {
+            // <h> assignment </h>\
+            // let str = " <div id='frame_0' class = 'frame'>\
+            //                     <h class = 'title'>Frame 0</h>\
+            //                     <svg id = 'scatterplot_0'></svg>\
+            //                 </div>    \
+            //             <div id='frame_1' class = 'frame'>\
+            //                     <h class = 'title'>Frame 1</h>\
+            //                     <svg id = 'scatterplot_1'></svg>\
+            //             </div>\
+            //             <svg id = 'legend_0' class = 'legend'></svg>";
+
+            let str = " <div id='frame_0' class = 'frame'>\
+                                <h class = 'title'>Frame 0</h>\
+                                <svg id = 'scatterplot_0'></svg>\
+                            </div>    \
+                        <div id='frame_1' class = 'frame'>\
+                                <h class = 'title'>Frame 1</h>\
+                                <svg id = 'scatterplot_1'></svg>\
+                        </div>";
+
+            $(box_id).html(str);
+
+
+            let scatterplotSvg0, scatterplotSvg1;
+            scatterplotSvg0 = d3.select(box_id + " #scatterplot_0")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .style("background-color", bgcolor)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            scatterplotSvg1 = d3.select(box_id + " #scatterplot_1")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .style("background-color", bgcolor)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+            // let legendSvg;
+            // legendSvg = d3.select(box_id + " #legend_0")
+            //     .attr("width", 100)
+            //     .attr("height", 360)
+            //     .append("g");
+
+
+            drawScatterplot(scatterplotSvg0, data1, palettes, sigma);
+            drawScatterplot(scatterplotSvg1, data2, palettes, sigma);
+            //drawLegend(legendSvg, palettes);
+
+        }
+
+
+        // Functions for saving csv file
+        function downloadFile(fileName, content) {
+            var aTag = document.createElement('a');
+            var blob = new Blob(['\ufeff' + content], { type: "text/csv" });
+            aTag.download = fileName;
+            aTag.href = URL.createObjectURL(blob);
+            aTag.click();
+            URL.revokeObjectURL(blob);
+        }
+
+        function saveArray(array) {
+            let str = "";
+            for (let i = 0; i < array.length; i++) {
+                str += i;
+                str += ",";
+                str += array[i];
+                str += "\n";
+            }
+            let date = new Date().getTime();
+            let fileName = new Date(date).toLocaleString();
+
+            downloadFile(fileName + ".txt", str);
+            console.log("save array success!");
+        }
+
+
+    </script>
+</body>
+
+</html>

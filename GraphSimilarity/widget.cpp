@@ -22,10 +22,13 @@ void Widget::paintEvent(QPaintEvent *event)
     // render graph
     m_graph.renderGraph(painter);
 
+    // render graphlet
+    m_graph.renderCurGraphLets(painter);
+
     // 如果正处于绘制边的模式
     if(m_startID != -1)
     {
-        painter->drawLine(m_graph.GetNode(m_startID).x,m_graph.GetNode(m_startID).y,
+        painter->drawLine(m_graph.GetNode(m_startID)->x,m_graph.GetNode(m_startID)->y,
                           m_lastPos.x(), m_lastPos.y());
     }
 
