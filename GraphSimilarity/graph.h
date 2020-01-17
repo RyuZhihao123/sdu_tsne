@@ -21,8 +21,8 @@ struct Node    // 图
     }
 };
 
-typedef QPair<int,QVector<int>> GraphLetNode;
-typedef QVector<GraphLetNode> GraphLet;
+typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges
+typedef QVector<GraphLetNode> GraphLet;         //
 
 class Graph
 {
@@ -44,7 +44,24 @@ public:
 
     void GetGraphlets();   // 计算graphlets
     void ShowNextGraphlet();
-    QVector<GraphLet> SearchGraphLet1(int sid);  // 以起始点sid，为起点搜索graphlet.
+
+    QVector<GraphLet> SearchGraphLet(int gid, int sid);
+private:
+    // A family of functions for searching graphlets
+    // Search graphlet from sid
+    QVector<GraphLet> SearchGraphLet1(int sid);
+    QVector<GraphLet> SearchGraphLet2(int sid);
+    QVector<GraphLet> SearchGraphLet3(int sid);
+    QVector<GraphLet> SearchGraphLet4(int sid);
+    QVector<GraphLet> SearchGraphLet5(int sid);
+    QVector<GraphLet> SearchGraphLet6(int sid);
+    QVector<GraphLet> SearchGraphLet7(int sid);
+    QVector<GraphLet> SearchGraphLet8(int sid);
+    QVector<GraphLet> SearchGraphLet9(int sid);
+    QVector<GraphLet> SearchGraphLet10(int sid);
+    QVector<GraphLet> SearchGraphLet11(int sid);
+    QVector<GraphLet> SearchGraphLet15(int sid);
+
 };
 
 #endif // GRAPH_H

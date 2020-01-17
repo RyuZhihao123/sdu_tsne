@@ -49,3 +49,18 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_btnGen_clicked()
+{
+    genGraph(200);
+}
+
+Graph MainWindow::genGraph(int number)
+{
+    Graph g;
+    for (int i = 0; i < number; i++) {
+
+    }
+
+    return g;
+}

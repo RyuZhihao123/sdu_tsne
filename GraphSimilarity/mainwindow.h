@@ -26,6 +26,10 @@ private slots:
     void slot_calculateGraphLet();
     void slot_btnNext();
 
+    void on_btnGen_clicked();
+
+    Graph genGraph(int number = 500);
+
 private:
     Ui::MainWindow *ui;
 };

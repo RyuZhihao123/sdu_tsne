@@ -91,6 +91,38 @@ void Graph::ShowNextGraphlet()
     cur_ID = (cur_ID+1) % m_cur_graphlets.size();
 }
 
+QVector<GraphLet> Graph::SearchGraphLet(int gid, int sid)
+{
+    switch (gid) {
+    case 1:
+        return SearchGraphLet1(sid);
+    case 2:
+        return SearchGraphLet2(sid);
+    case 3:
+        return SearchGraphLet3(sid);
+    case 4:
+        return SearchGraphLet4(sid);
+    case 5:
+        return SearchGraphLet5(sid);
+    case 6:
+        return SearchGraphLet6(sid);
+    case 7:
+        return SearchGraphLet7(sid);
+    case 8:
+        return SearchGraphLet8(sid);
+    case 9:
+        return SearchGraphLet9(sid);
+    case 10:
+        return SearchGraphLet10(sid);
+    case 11:
+        return SearchGraphLet11(sid);
+    case 15:
+        return SearchGraphLet15(sid);
+    default:
+        return SearchGraphLet1(sid);
+    }
+}
+
 void Graph::GetGraphlets()
 {
     m_cur_graphlets.clear();
@@ -98,24 +130,158 @@ void Graph::GetGraphlets()
 
     for(int i=0; i<m_nodes.size(); ++i)
     {
-        m_cur_graphlets.append(SearchGraphLet1(i));
+        m_cur_graphlets.append(SearchGraphLet15(i));
         // to do......
     }
 }
 
 QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个点为起点找graphlet
 {
-    // g4: n0->n1, n1->n2, n1->n3
+    // g1: n0->n1, n1->n2
     QVector<bool> visited(m_nodes.size(),false);
-    visited[sid] = true;
+    QVector<GraphLet> glets;
 
+    int n0 = sid;
+    visited[n0] = true;
+
+    for(int i = 0; i<m_nodes[n0].childs.size(); ++i)
+    {
+        int n1 = m_nodes[n0].childs[i];
+        visited[n1] = true;
+
+        Node* t1 = GetNode(n1);
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(visited[n2])
+                continue;
+
+            GraphLet tmp;
+            GraphLetNode m0,m1,m2;
+            m0.first = n0;
+            m1.first = n1;
+            m2.first = n2;
+            m0.second.append(n1);
+            m1.second.append(n2);
+
+            tmp.append(m0);
+            tmp.append(m1);
+            tmp.append(m2);
+
+            glets.append(tmp);
+        }
+    }
+    return glets;
+}
+
+
+
+QVector<GraphLet> Graph::SearchGraphLet2(int sid)   // 输入的当前以那个点为起点找graphlet
+{
+    // g1: n0->n1, n1->n2, n2->n0
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if (n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for (int m=0; m < t2->childs.size(); ++m) {
+                int n3 = t2->childs[m];
+
+                if(n3 == n0) {
+                    GraphLet tmp;
+                    GraphLetNode m0,m1,m2;
+                    m0.first = n0;
+                    m1.first = n1;
+                    m2.first = n2;
+                    m0.second.append(n1);
+                    m1.second.append(n2);
+                    m2.second.append(n0);
+
+                    tmp.append(m0);
+                    tmp.append(m1);
+                    tmp.append(m2);
+
+                    glets.append(tmp);
+                }
+            }
+        }
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet3(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n3
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int m=0; m<t2->childs.size(); ++m)
+            {
+                int n3 = t2->childs[m];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                GraphLet tmp;
+                GraphLetNode m0, m1, m2, m3;
+                m0.first = n0;
+                m1.first = n1;
+                m2.first = n2;
+                m3.first = n3;
+
+                m0.second.append(n1);
+                m1.second.append(n2);
+                m2.second.append(n3);
+
+                tmp.append(m0);
+                tmp.append(m1);
+                tmp.append(m2);
+                tmp.append(m3);
+
+                glets.append(tmp);
+            }
+        }
+
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet4(int sid)
+{
+    // g4: n0->n1, n1->n2, n1->n3
     QVector<GraphLet> glets;
 
     int n0 = sid;   //
+    Node* t0 = GetNode(n0);
 
-    for(int i = 0; i<m_nodes[sid].childs.size(); ++i)
+    for(int i = 0; i<t0->childs.size(); ++i)
     {
-        int n1 = m_nodes[sid].childs[i];
+        int n1 = t0->childs[i];
         Node* t1 = GetNode(n1);
 
         for(int k=0; k<t1->childs.size(); ++k)
@@ -151,4 +317,489 @@ QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个�
 }
 
 
+QVector<GraphLet> Graph::SearchGraphLet5(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n3, n3->n0
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int m=0; m<t2->childs.size(); ++m)
+            {
+                int n3 = t2->childs[m];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for(int n=0; n<t3->childs.size(); ++n)
+                {
+                    int n4 = t3->childs[n];
+                    if (n4 == n0)
+                    {
+                        GraphLet tmp;
+                        GraphLetNode m0, m1, m2, m3;
+                        m0.first = n0;
+                        m1.first = n1;
+                        m2.first = n2;
+                        m3.first = n3;
+
+                        m0.second.append(n1);
+                        m1.second.append(n2);
+                        m2.second.append(n3);
+                        m3.second.append(n0);
+
+                        tmp.append(m0);
+                        tmp.append(m1);
+                        tmp.append(m2);
+                        tmp.append(m3);
+
+                        glets.append(tmp);
+                    }
+                }
+            }
+        }
+
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet6(int sid)
+{
+    // g4: n0->n1, n1->n2, n1->n3, n2->n3
+    QVector<GraphLet> glets;
+
+    int n0 = sid;   //
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(n2 == n0)
+                continue;
+            Node* t2 = GetNode(n2);
+            for(int m=0; m<t2->childs.size(); ++m)
+            {
+                int n3 = t2->childs[m];
+                if(n3 == n0 || n3 == n1)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for (int n = 0; n < t3->childs.size(); ++n) {
+                    int n4 = t3->childs[n];
+                    if (n4 == n1) {
+                        GraphLet tmp;
+                        GraphLetNode m0,m1,m2,m3;
+                        m0.first = n0;
+                        m1.first = n1;
+                        m2.first = n2;
+                        m3.first = n3;
+                        m0.second.append(n1);
+                        m1.second.append(n2);
+                        m2.second.append(n3);
+                        m3.second.append(n1);
+                        tmp.append(m0);
+                        tmp.append(m1);
+                        tmp.append(m2);
+                        tmp.append(m3);
+
+                        glets.append(tmp);
+                    }
+                }
+            }
+        }
+    }
+
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet7(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n3, n3->n0, n3->n1
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int m=0; m<t2->childs.size(); ++m)
+            {
+                int n3 = t2->childs[m];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for(int n=0; n<t3->childs.size(); ++n)
+                {
+                    int n4 = t3->childs[n];
+                    for (int j = n+1; j<t3->childs.size(); ++j) {
+                        int n5 = t3->childs[j];
+                        if (n4 == n0 && n5 == n1)
+                        {
+
+                            GraphLet tmp;
+                            GraphLetNode m0, m1, m2, m3;
+                            m0.first = n0;
+                            m1.first = n1;
+                            m2.first = n2;
+                            m3.first = n3;
+
+                            m0.second.append(n1);
+                            m1.second.append(n2);
+                            m2.second.append(n3);
+                            m3.second.append(n0);
+                            m3.second.append(n1);
+
+                            tmp.append(m0);
+                            tmp.append(m1);
+                            tmp.append(m2);
+                            tmp.append(m3);
+
+                            glets.append(tmp);
+                        }
+                    }
+
+
+                }
+            }
+        }
+
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet8(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n0, n2->n3, n3->n0, n3->n1
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if (n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for (int m=0; m < t2->childs.size(); ++m) {
+                int n3 = t2->childs[m];
+
+                if(n3 == n0) {
+                    for (int n = m+1; n < t2->childs.size(); ++n) {
+                        n3 = t2->childs[n];
+
+                        Node* t3 = GetNode(n3);
+                        for (int j = 0; j < t3->childs.size(); ++j) {
+                            for (int jj=j+1; jj < t3->childs.size(); ++jj) {
+                                int n4 = t3->childs[j];
+                                int n5 = t3->childs[jj];
+                                if (n4 == n0 && n5 == n1) {
+                                    GraphLet tmp;
+                                    GraphLetNode m0,m1,m2, m3;
+                                    m0.first = n0;
+                                    m1.first = n1;
+                                    m2.first = n2;
+                                    m3.first = n3;
+                                    m0.second.append(n1);
+                                    m1.second.append(n2);
+                                    m2.second.append(n0);
+                                    m2.second.append(n3);
+                                    m3.second.append(n0);
+                                    m3.second.append(n1);
+
+                                    tmp.append(m0);
+                                    tmp.append(m1);
+                                    tmp.append(m2);
+                                    tmp.append(m3);
+
+                                    glets.append(tmp);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet9(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n3, n3->n4
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int k=0; k<t1->childs.size(); ++k)
+        {
+            int n2 = t1->childs[k];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int m=0; m<t2->childs.size(); ++m)
+            {
+                int n3 = t2->childs[m];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for (int n = 0; n<t3->childs.size(); ++n)
+                {
+                    int n4 = t3->childs[n];
+                    if (n4 == n2 || n4 == n1 || n4 == n0)
+                        continue;
+
+                    GraphLet tmp;
+                    GraphLetNode m0, m1, m2, m3, m4;
+                    m0.first = n0;
+                    m1.first = n1;
+                    m2.first = n2;
+                    m3.first = n3;
+                    m4.first = n4;
+
+                    m0.second.append(n1);
+                    m1.second.append(n2);
+                    m2.second.append(n3);
+                    m3.second.append(n4);
+
+                    tmp.append(m0);
+                    tmp.append(m1);
+                    tmp.append(m2);
+                    tmp.append(m3);
+                    tmp.append(m4);
+
+                    glets.append(tmp);
+                }
+            }
+        }
+
+    }
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet10(int sid)
+{
+    // g10: n0->n1, n1->n2, n2->n3, n2->n4
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for (int j = 0; j<t1->childs.size(); j++) {
+            int n2 = t1->childs[j];
+            if (n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int k=0; k<t2->childs.size(); ++k)
+            {
+                int n3 = t2->childs[k];
+                if(n3 == n0 || n3 == n1)
+                    continue;
+
+                for(int m=k+1; m<t2->childs.size(); ++m)
+                {
+                    int n4 = t2->childs[m];
+                    if(n4 == n0 || n4 == n1)
+                        continue;
+
+                    GraphLet tmp;
+                    GraphLetNode m0,m1,m2,m3,m4;
+                    m0.first = n0;
+                    m1.first = n1;
+                    m2.first = n2;
+                    m3.first = n3;
+                    m4.first = n4;
+
+                    m0.second.append(n1);
+                    m1.second.append(n2);
+                    m2.second.append(n3);
+                    m2.second.append(n4);
+
+                    tmp.append(m0);
+                    tmp.append(m1);
+                    tmp.append(m2);
+                    tmp.append(m3);
+                    tmp.append(m4);
+
+                    glets.append(tmp);
+                }
+            }
+        }
+    }
+
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet11(int sid)
+{
+    // g11
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+
+        for (int j = i+1; j<t0->childs.size(); ++j) {
+            int n2 = t0->childs[j];
+            if (n2 == n0)
+                continue;
+
+            for (int k = j+1; k < t0->childs.size(); ++k) {
+                int n3 = t0->childs[k];
+                if (n3 == n0 || n3 == n1)
+                    continue;
+
+                for (int m = k+1; m < t0->childs.size(); ++m) {
+                    int n4 = t0->childs[m];
+                    if (n4 == n0 || n4 == n1 || n4 == n2)
+                        continue;
+
+                    GraphLet tmp;
+                    GraphLetNode m0,m1,m2,m3,m4;
+                    m0.first = n0;
+                    m1.first = n1;
+                    m2.first = n2;
+                    m3.first = n3;
+                    m4.first = n4;
+
+                    m0.second.append(n1);
+                    m0.second.append(n2);
+                    m0.second.append(n3);
+                    m0.second.append(n4);
+
+                    tmp.append(m0);
+                    tmp.append(m1);
+                    tmp.append(m2);
+                    tmp.append(m3);
+                    tmp.append(m4);
+
+                    glets.append(tmp);
+                }
+            }
+        }
+    }
+
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet15(int sid)
+{
+    // g1: n0->n1, n1->n2, n2->n3, n3->n4, n4->n0ß
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int j=0; j<t1->childs.size(); ++j)
+        {
+            int n2 = t1->childs[j];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int k=0; k<t2->childs.size(); ++k)
+            {
+                int n3 = t2->childs[k];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for (int m = 0; m<t3->childs.size(); ++m)
+                {
+                    int n4 = t3->childs[m];
+                    if (n4 == n2 || n4 == n1 || n4 == n0)
+                        continue;
+
+                    Node* t4 = GetNode(n4);
+                    for (int n = 0; n<t4->childs.size(); ++n) {
+                        int n5 = t4->childs[n];
+                        if (n5 == n0) {
+                            GraphLet tmp;
+                            GraphLetNode m0, m1, m2, m3, m4;
+                            m0.first = n0;
+                            m1.first = n1;
+                            m2.first = n2;
+                            m3.first = n3;
+                            m4.first = n4;
+
+                            m0.second.append(n1);
+                            m1.second.append(n2);
+                            m2.second.append(n3);
+                            m3.second.append(n4);
+                            m4.second.append(n0);
+
+                            tmp.append(m0);
+                            tmp.append(m1);
+                            tmp.append(m2);
+                            tmp.append(m3);
+                            tmp.append(m4);
+
+                            glets.append(tmp);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    return glets;
+}
 
