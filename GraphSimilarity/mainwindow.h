@@ -20,9 +20,6 @@ public:
 
     Widget* m_widget;
 
-signals:
-    void sig_aaa();
-
 private slots:
     void slot_openGraph();
     void slot_saveGraph();

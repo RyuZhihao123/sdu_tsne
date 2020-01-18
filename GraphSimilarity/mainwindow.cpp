@@ -8,11 +8,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    for(int i=0; i<10; ++i)
+    for(int i=0; i<21; ++i)
     {
         ui->comboBox->addItem(QString("Graph:%1").arg(i+1));
     }
-    emit sig_aaa();
 
     connect(ui->btnOpen, SIGNAL(clicked(bool)), this, SLOT(slot_openGraph()));
     connect(ui->btnSave,SIGNAL(clicked(bool)),this,SLOT(slot_saveGraph()));
@@ -56,7 +55,7 @@ void MainWindow::slot_openGraph()
             line = in.readLine();
             continue;
         }
-        QStringList list = line.split(QRegExp("\\t|\\s+"));
+        QStringList list = line.split(QRegExp("\\s+"));
         if (!flag)
         {
             // We assume that nodes are stored in file sequentially
