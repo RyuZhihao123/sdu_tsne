@@ -33,6 +33,8 @@ public:
     int cur_ID = 0;                          // 当前显示的graphlet编号
     QVector<GraphLet> m_cur_graphlets;       //  当前找到的
 
+    int nodeNum() const;
+
     void addNode(const Node& n);
     void addEdge(int a, int b);
 

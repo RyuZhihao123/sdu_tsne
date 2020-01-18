@@ -5,6 +5,11 @@ Graph::Graph()
 
 }
 
+int Graph::nodeNum() const
+{
+   return m_nodes.size();
+}
+
 Node* Graph::GetNode(int id)
 {
     assert(id >= 0 && id < m_nodes.size());

@@ -64,7 +64,7 @@ public:
         btnCalculate->setGeometry(QRect(0, 180, 112, 32));
         graphletId = new QLabel(groupBox);
         graphletId->setObjectName(QString::fromUtf8("graphletId"));
-        graphletId->setGeometry(QRect(7, 350, 111, 20));
+        graphletId->setGeometry(QRect(10, 350, 101, 20));
         btnGen = new QPushButton(groupBox);
         btnGen->setObjectName(QString::fromUtf8("btnGen"));
         btnGen->setGeometry(QRect(0, 80, 112, 32));
@@ -90,7 +90,7 @@ public:
         btnSave->setText(QCoreApplication::translate("MainWindow", "\344\277\235\345\255\230", nullptr));
         btnNext->setText(QCoreApplication::translate("MainWindow", "Next", nullptr));
         btnCalculate->setText(QCoreApplication::translate("MainWindow", "\350\256\241\347\256\227", nullptr));
-        graphletId->setText(QCoreApplication::translate("MainWindow", "current graphlet:", nullptr));
+        graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
         btnGen->setText(QCoreApplication::translate("MainWindow", "generate", nullptr));
     } // retranslateUi
 
