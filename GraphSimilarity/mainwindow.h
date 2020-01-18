@@ -28,9 +28,12 @@ private slots:
 
     void on_btnGen_clicked();
 
-    Graph genGraph(int number = 500);
+    Graph genGraph(int nodeNum = 500, int edgeNum = 499);
+
+    void on_comboBox_activated(int index);
 
 private:
     Ui::MainWindow *ui;
+    int m_graphlet_id = 0;
 };
 #endif // MAINWINDOW_H

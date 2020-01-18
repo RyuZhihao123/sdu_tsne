@@ -91,47 +91,53 @@ void Graph::ShowNextGraphlet()
     cur_ID = (cur_ID+1) % m_cur_graphlets.size();
 }
 
+
+void Graph::GetGraphlets(int gid)
+{
+    assert(gid >= 0 && gid <= 20);
+
+    QTime time;
+    time.start();
+
+    m_cur_graphlets.clear();
+    cur_ID = 0;
+    for(int i=0; i<m_nodes.size(); ++i)
+    {
+        m_cur_graphlets.append(SearchGraphLet(gid, i));
+    }
+    qDebug() << "Compute graphlets: " << gid << " cost " << time.elapsed() << "ms";
+}
+
+
 QVector<GraphLet> Graph::SearchGraphLet(int gid, int sid)
 {
     switch (gid) {
-    case 1:
+    case 0:
         return SearchGraphLet1(sid);
-    case 2:
+    case 1:
         return SearchGraphLet2(sid);
-    case 3:
+    case 2:
         return SearchGraphLet3(sid);
-    case 4:
+    case 3:
         return SearchGraphLet4(sid);
-    case 5:
+    case 4:
         return SearchGraphLet5(sid);
-    case 6:
+    case 5:
         return SearchGraphLet6(sid);
-    case 7:
+    case 6:
         return SearchGraphLet7(sid);
-    case 8:
+    case 7:
         return SearchGraphLet8(sid);
-    case 9:
+    case 8:
         return SearchGraphLet9(sid);
-    case 10:
+    case 9:
         return SearchGraphLet10(sid);
-    case 11:
+    case 10:
         return SearchGraphLet11(sid);
-    case 15:
+    case 14:
         return SearchGraphLet15(sid);
     default:
         return SearchGraphLet1(sid);
-    }
-}
-
-void Graph::GetGraphlets()
-{
-    m_cur_graphlets.clear();
-    cur_ID = 0;
-
-    for(int i=0; i<m_nodes.size(); ++i)
-    {
-        m_cur_graphlets.append(SearchGraphLet15(i));
-        // to do......
     }
 }
 

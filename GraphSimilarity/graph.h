@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <cassert>
 #include <QQueue>
+#include <QTime>
 #include <cmath>
 
 struct Node    // 图
@@ -42,7 +43,7 @@ public:
     Node *GetNode(int id);
     int HasNodeAt(QPoint p, float radius = 100);
 
-    void GetGraphlets();   // 计算graphlets
+    void GetGraphlets(int gid);   // 计算graphlets
     void ShowNextGraphlet();
 
     QVector<GraphLet> SearchGraphLet(int gid, int sid);

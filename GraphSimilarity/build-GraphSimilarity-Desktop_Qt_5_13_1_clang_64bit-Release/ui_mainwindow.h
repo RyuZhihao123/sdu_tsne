@@ -13,6 +13,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGroupBox>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -31,6 +32,8 @@ public:
     QComboBox *comboBox;
     QPushButton *btnNext;
     QPushButton *btnCalculate;
+    QLabel *graphletId;
+    QPushButton *btnGen;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -46,19 +49,25 @@ public:
         groupBox->setGeometry(QRect(590, 10, 120, 411));
         btnOpen = new QPushButton(groupBox);
         btnOpen->setObjectName(QString::fromUtf8("btnOpen"));
-        btnOpen->setGeometry(QRect(0, 30, 112, 32));
+        btnOpen->setGeometry(QRect(0, 20, 112, 32));
         btnSave = new QPushButton(groupBox);
         btnSave->setObjectName(QString::fromUtf8("btnSave"));
-        btnSave->setGeometry(QRect(0, 80, 112, 32));
+        btnSave->setGeometry(QRect(0, 50, 112, 32));
         comboBox = new QComboBox(groupBox);
         comboBox->setObjectName(QString::fromUtf8("comboBox"));
-        comboBox->setGeometry(QRect(0, 120, 111, 32));
+        comboBox->setGeometry(QRect(0, 150, 111, 32));
         btnNext = new QPushButton(groupBox);
         btnNext->setObjectName(QString::fromUtf8("btnNext"));
-        btnNext->setGeometry(QRect(10, 230, 112, 32));
+        btnNext->setGeometry(QRect(0, 240, 112, 32));
         btnCalculate = new QPushButton(groupBox);
         btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
-        btnCalculate->setGeometry(QRect(10, 180, 112, 32));
+        btnCalculate->setGeometry(QRect(0, 180, 112, 32));
+        graphletId = new QLabel(groupBox);
+        graphletId->setObjectName(QString::fromUtf8("graphletId"));
+        graphletId->setGeometry(QRect(7, 350, 111, 20));
+        btnGen = new QPushButton(groupBox);
+        btnGen->setObjectName(QString::fromUtf8("btnGen"));
+        btnGen->setGeometry(QRect(0, 80, 112, 32));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -81,6 +90,8 @@ public:
         btnSave->setText(QCoreApplication::translate("MainWindow", "\344\277\235\345\255\230", nullptr));
         btnNext->setText(QCoreApplication::translate("MainWindow", "Next", nullptr));
         btnCalculate->setText(QCoreApplication::translate("MainWindow", "\350\256\241\347\256\227", nullptr));
+        graphletId->setText(QCoreApplication::translate("MainWindow", "current graphlet:", nullptr));
+        btnGen->setText(QCoreApplication::translate("MainWindow", "generate", nullptr));
     } // retranslateUi
 
 };
