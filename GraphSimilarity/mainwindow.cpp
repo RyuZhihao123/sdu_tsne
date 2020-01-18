@@ -185,3 +185,9 @@ void MainWindow::on_comboBox_activated(int index)
 {
     m_graphlet_id = index;
 }
+
+void MainWindow::on_btnClear_clicked()
+{
+    m_widget->m_graph.clear();
+    m_widget->update();
+}

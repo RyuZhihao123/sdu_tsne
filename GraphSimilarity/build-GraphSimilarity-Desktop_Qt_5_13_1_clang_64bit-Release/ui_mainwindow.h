@@ -34,6 +34,7 @@ public:
     QPushButton *btnCalculate;
     QLabel *graphletId;
     QPushButton *btnGen;
+    QPushButton *btnClear;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -55,19 +56,22 @@ public:
         btnSave->setGeometry(QRect(0, 50, 112, 32));
         comboBox = new QComboBox(groupBox);
         comboBox->setObjectName(QString::fromUtf8("comboBox"));
-        comboBox->setGeometry(QRect(0, 150, 111, 32));
+        comboBox->setGeometry(QRect(0, 260, 111, 32));
         btnNext = new QPushButton(groupBox);
         btnNext->setObjectName(QString::fromUtf8("btnNext"));
-        btnNext->setGeometry(QRect(0, 240, 112, 32));
+        btnNext->setGeometry(QRect(0, 320, 112, 32));
         btnCalculate = new QPushButton(groupBox);
         btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
-        btnCalculate->setGeometry(QRect(0, 180, 112, 32));
+        btnCalculate->setGeometry(QRect(0, 290, 112, 32));
         graphletId = new QLabel(groupBox);
         graphletId->setObjectName(QString::fromUtf8("graphletId"));
         graphletId->setGeometry(QRect(10, 350, 101, 20));
         btnGen = new QPushButton(groupBox);
         btnGen->setObjectName(QString::fromUtf8("btnGen"));
         btnGen->setGeometry(QRect(0, 80, 112, 32));
+        btnClear = new QPushButton(groupBox);
+        btnClear->setObjectName(QString::fromUtf8("btnClear"));
+        btnClear->setGeometry(QRect(0, 110, 112, 32));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -92,6 +96,7 @@ public:
         btnCalculate->setText(QCoreApplication::translate("MainWindow", "\350\256\241\347\256\227", nullptr));
         graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
         btnGen->setText(QCoreApplication::translate("MainWindow", "generate", nullptr));
+        btnClear->setText(QCoreApplication::translate("MainWindow", "clear", nullptr));
     } // retranslateUi
 
 };

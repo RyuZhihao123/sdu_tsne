@@ -32,6 +32,8 @@ private slots:
 
     void on_comboBox_activated(int index);
 
+    void on_btnClear_clicked();
+
 private:
     Ui::MainWindow *ui;
     int m_graphlet_id = 0;

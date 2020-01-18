@@ -48,6 +48,8 @@ public:
     void GetGraphlets(int gid);   // 计算graphlets
     void ShowNextGraphlet();
 
+    void clear();
+
     QVector<GraphLet> SearchGraphLet(int gid, int sid);
 private:
     // A family of functions for searching graphlets
@@ -64,6 +66,7 @@ private:
     QVector<GraphLet> SearchGraphLet10(int sid);
     QVector<GraphLet> SearchGraphLet11(int sid);
     QVector<GraphLet> SearchGraphLet15(int sid);
+    QVector<GraphLet> SearchGraphLet16(int sid);
 
 };
 
