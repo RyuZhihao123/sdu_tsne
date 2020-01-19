@@ -178,6 +178,9 @@ QVector<float> Graph::localGFD(int sid)
     typedef QPair<int, int> tuple;  // first is level, second is node
 
     QVector<bool> visited(m_nodes.size(), false);// ensure each node is visited once
+
+    visited[sid] = true;
+
     QQueue<tuple> q;
     q.enqueue(tuple(0, sid));
 
@@ -191,7 +194,6 @@ QVector<float> Graph::localGFD(int sid)
         int cnode = t.second;
 
 
-        visited[cnode] = true;
         qDebug() << "visit:" << cnode;
 
         if (clevel != llevel)
@@ -203,6 +205,7 @@ QVector<float> Graph::localGFD(int sid)
                 break;
             }
         }
+
 
         QVector<float> GFD = calGFD(cnode);
         allGFDs.push_back(GFD);
@@ -217,6 +220,7 @@ QVector<float> Graph::localGFD(int sid)
         {
             if (!visited[n->childs[i]])
             {
+                visited[n->childs[i]] = true;
                 q.enqueue(tuple(clevel+1, n->childs[i]));
             }
         }
