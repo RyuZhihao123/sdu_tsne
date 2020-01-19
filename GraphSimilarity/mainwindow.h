@@ -34,6 +34,8 @@ private slots:
 
     void on_btnClear_clicked();
 
+    void on_btnGFD_clicked();
+
 private:
     Ui::MainWindow *ui;
     int m_graphlet_id = 0;

@@ -1,5 +1,8 @@
 #ifndef GRAPH_H
 #define GRAPH_H
+#define MAX_SEARCH_RANGE 3
+#define ALL_GRAPHLET    21
+
 #include <QVector>
 #include <QPainter>
 #include <cassert>
@@ -50,7 +53,10 @@ public:
 
     void clear();
 
+
     QVector<GraphLet> SearchGraphLet(int gid, int sid);
+    QVector<float> calGFD(int sid);
+    QVector<float> localGFD(int sid);  // return the feature vector of given node
 private:
     // A family of functions for searching graphlets
     // Search graphlet from sid

@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    for(int i=0; i<21; ++i)
+    for(int i=0; i<ALL_GRAPHLET; ++i)
     {
         ui->comboBox->addItem(QString("Graph:%1").arg(i+1));
     }
@@ -78,7 +78,7 @@ void MainWindow::slot_openGraph()
 void MainWindow::slot_saveGraph()
 {
     QFileDialog fileDialog;
-    QString fileName = fileDialog.getSaveFileName(this,tr("Save Graph"),"/home",tr("Graph (*.graph)"));
+    QString fileName = fileDialog.getSaveFileName(this,tr("Save Graph"),".",tr("Graph (*.graph)"));
     if(fileName == "")
     {
         return;
@@ -165,14 +165,16 @@ Graph MainWindow::genGraph(int nodeNum, int edgeNum)
 
     srand(time(0));
     // Random nodes
-    for (int i = 0; i < nodeNum; i++) {
+    for (int i = 0; i < nodeNum; i++)
+    {
         int nx = rand() % (maxWidth+1);
         int ny = rand() % (maxHeight+1);
         g.addNode(Node(nx, ny));
     }
 
     // Random edges
-    for (int i = 0; i < edgeNum; i++) {
+    for (int i = 0; i < edgeNum; i++)
+    {
         int sid = rand() % nodeNum;
         int tid = rand() % nodeNum;
         g.addEdge(sid, tid);
@@ -190,4 +192,17 @@ void MainWindow::on_btnClear_clicked()
 {
     m_widget->m_graph.clear();
     m_widget->update();
+}
+
+void MainWindow::on_btnGFD_clicked()
+{
+    // For test
+    int sid = 0;
+
+    QVector<float> v =m_widget->m_graph.localGFD(sid);
+    qDebug() << "Feature vector:";
+    for (int i = 0; i < v.size(); i++)
+    {
+        qDebug() << v[i] << " ";
+    }
 }

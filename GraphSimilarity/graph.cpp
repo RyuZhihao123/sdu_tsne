@@ -7,7 +7,7 @@ Graph::Graph()
 
 int Graph::nodeNum() const
 {
-   return m_nodes.size();
+    return m_nodes.size();
 }
 
 Node* Graph::GetNode(int id)
@@ -104,7 +104,7 @@ void Graph::clear()
 
 void Graph::GetGraphlets(int gid)
 {
-    assert(gid >= 0 && gid <= 20);
+    assert(gid >= 0 && gid < ALL_GRAPHLET);
 
     QTime time;
     time.start();
@@ -149,6 +149,89 @@ QVector<GraphLet> Graph::SearchGraphLet(int gid, int sid)
     default:
         return SearchGraphLet1(sid);
     }
+}
+
+QVector<float> Graph::calGFD(int sid)
+{
+    QVector<float> GFD;
+
+    int sum = 0;
+    for (int i = 0; i < ALL_GRAPHLET; i++)
+    {
+        int f = SearchGraphLet(i, sid).size();
+        GFD.push_back((float)f);
+        sum += f;
+    }
+
+    for (int i = 0; i < GFD.size(); i++)
+    {
+        GFD[i] /= sum;
+    }
+
+    return GFD;
+}
+
+QVector<float> Graph::localGFD(int sid)
+{
+    QVector<QVector<float>> allGFDs;
+
+    typedef QPair<int, int> tuple;  // first is level, second is node
+
+    QVector<bool> visited(m_nodes.size(), false);// ensure each node is visited once
+    QQueue<tuple> q;
+    q.enqueue(tuple(0, sid));
+
+    int llevel = 0;
+    // BFS for MAX_SEARCH_RANGE times
+    while(!q.isEmpty())
+    {
+        // top
+        tuple t = q.head();
+        int clevel = t.first;
+        int cnode = t.second;
+
+
+        visited[cnode] = true;
+        qDebug() << "visit:" << cnode;
+
+        if (clevel != llevel)
+        {
+            llevel = clevel;
+            if (clevel >= MAX_SEARCH_RANGE)
+            {
+                qDebug() << "max level reached.";
+                break;
+            }
+        }
+
+        QVector<float> GFD = calGFD(cnode);
+        allGFDs.push_back(GFD);
+
+
+        // pop
+        q.dequeue();
+
+        // push
+        Node* n = GetNode(cnode);
+        for (int i = 0; i< n->childs.size(); i++)
+        {
+            if (!visited[n->childs[i]])
+            {
+                q.enqueue(tuple(clevel+1, n->childs[i]));
+            }
+        }
+    }
+
+    // average feature vector over all nodes within the range
+    QVector<float> v(ALL_GRAPHLET);
+    for (int i = 0; i < v.size(); i++)
+    {
+        for (int j = 0; j < allGFDs.size(); j++) {
+            v[i] += allGFDs[j][i];
+        }
+        v[i] /= allGFDs.size();
+    }
+    return v;
 }
 
 QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个点为起点找graphlet
