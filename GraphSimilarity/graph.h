@@ -26,7 +26,7 @@ struct Node    // 图
 };
 
 typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges
-typedef QVector<GraphLetNode> GraphLet;         //
+typedef QVector<GraphLetNode> GraphLet;         // graphlet representation
 
 class Graph
 {
@@ -71,8 +71,10 @@ private:
     QVector<GraphLet> SearchGraphLet9(int sid);
     QVector<GraphLet> SearchGraphLet10(int sid);
     QVector<GraphLet> SearchGraphLet11(int sid);
+    QVector<GraphLet> SearchGraphLet13(int sid);
+    QVector<GraphLet> SearchGraphLet14(int sid);/// Bug...
     QVector<GraphLet> SearchGraphLet15(int sid);
-    QVector<GraphLet> SearchGraphLet16(int sid);
+    QVector<GraphLet> SearchGraphLet16(int sid);/// Bug...
 
 };
 
