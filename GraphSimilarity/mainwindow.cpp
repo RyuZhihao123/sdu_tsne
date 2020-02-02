@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         ui->comboBox->addItem(QString("Graph:%1").arg(i+1));
     }
+//    ui->comboBox->setCurrentIndex(19);
 
     connect(ui->btnOpen, SIGNAL(clicked(bool)), this, SLOT(slot_openGraph()));
     connect(ui->btnSave,SIGNAL(clicked(bool)),this,SLOT(slot_saveGraph()));
@@ -63,9 +64,10 @@ void MainWindow::slot_openGraph()
         }
         else
         {
-            for (int i = 1; i < list.size(); i++)
+            for (int i = 1; i < list.size()-1; i++)
             {
                 g.addEdge(list[0].toInt(), list[i].toInt());
+                qDebug() << QString("Add edge(%1,%2)").arg(list[0], list[i]);
             }
         }
         line = in.readLine();
@@ -95,7 +97,7 @@ void MainWindow::slot_saveGraph()
         QTextStream textStream(&file);
 
         QString str;
-        // positions of nodes
+        // Store positions of nodes
         for (int i = 0; i < m_widget->m_graph.nodeNum(); i++)
         {
             str += QString::number(i);
@@ -109,6 +111,7 @@ void MainWindow::slot_saveGraph()
             str += "\n";
         }
 
+        // Delimeter
         str += "#\n";
 
         // edges of the graph

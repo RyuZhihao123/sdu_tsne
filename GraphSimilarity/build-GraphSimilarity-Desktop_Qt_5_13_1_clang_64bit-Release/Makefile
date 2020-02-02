@@ -218,6 +218,7 @@ DIST          = /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf \
+		../.qmake.stash \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf \
@@ -428,6 +429,7 @@ Makefile: ../GraphSimilarity.pro /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clan
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf \
@@ -615,6 +617,7 @@ Makefile: ../GraphSimilarity.pro /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clan
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf:
@@ -688,6 +691,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r GraphSimilarity.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 
@@ -723,6 +727,11 @@ compiler_moc_header_clean:
 moc_mainwindow.cpp: ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdebug.h \
 		../widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
@@ -735,6 +744,8 @@ moc_mainwindow.cpp: ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		moc_predefs.h \
 		/Users/joe/Qt/5.13.1/clang_64/bin/moc
 	/Users/joe/Qt/5.13.1/clang_64/bin/moc $(DEFINES) --include '/Users/joe/Codes/QtProjects/t-sne for comparison/GraphSimilarity/build-GraphSimilarity-Desktop_Qt_5_13_1_clang_64bit-Release/moc_predefs.h' -I/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang -I'/Users/joe/Codes/QtProjects/t-sne for comparison/GraphSimilarity' -I/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers -I/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers -I/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include -F/Users/joe/Qt/5.13.1/clang_64/lib ../mainwindow.h -o moc_mainwindow.cpp
@@ -751,6 +762,8 @@ moc_widget.cpp: ../widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		moc_predefs.h \
 		/Users/joe/Qt/5.13.1/clang_64/bin/moc
 	/Users/joe/Qt/5.13.1/clang_64/bin/moc $(DEFINES) --include '/Users/joe/Codes/QtProjects/t-sne for comparison/GraphSimilarity/build-GraphSimilarity-Desktop_Qt_5_13_1_clang_64bit-Release/moc_predefs.h' -I/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang -I'/Users/joe/Codes/QtProjects/t-sne for comparison/GraphSimilarity' -I/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers -I/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers -I/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers -I. -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.0/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.15.sdk/usr/include -F/Users/joe/Qt/5.13.1/clang_64/lib ../widget.h -o moc_widget.cpp
@@ -789,6 +802,8 @@ graph.o: ../graph.cpp ../graph.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QDebug \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdebug.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o graph.o ../graph.cpp
@@ -796,6 +811,11 @@ graph.o: ../graph.cpp ../graph.h \
 main.o: ../main.cpp ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdebug.h \
 		../widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
@@ -808,6 +828,8 @@ main.o: ../main.cpp ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QApplication \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qapplication.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o ../main.cpp
@@ -815,6 +837,11 @@ main.o: ../main.cpp ../mainwindow.h \
 mainwindow.o: ../mainwindow.cpp ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMainWindow \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmainwindow.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QMessageBox \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qmessagebox.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTextStream \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qtextstream.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdebug.h \
 		../widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QWidget \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
@@ -827,6 +854,8 @@ mainwindow.o: ../mainwindow.cpp ../mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		ui_mainwindow.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QFileDialog \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qfiledialog.h
@@ -844,6 +873,8 @@ widget.o: ../widget.cpp ../widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h \
 		ui_widget.h \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QDebug \
 		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdebug.h
