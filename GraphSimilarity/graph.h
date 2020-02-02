@@ -1,7 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 #define MAX_SEARCH_RANGE 3
-#define ALL_GRAPHLET    21
+#define ALL_GRAPHLET    29
 
 #include <QVector>
 #include <QPainter>
@@ -55,7 +55,7 @@ public:
     void clear();
 
 
-    QVector<GraphLet> SearchGraphLet(int gid, int sid);
+    QVector<GraphLet> SearchGraphLet(int gid, int sid); // Search graphlet type gid starting from node sid
     QVector<float> calGFD(int sid);
     QVector<float> localGFD(int sid);  // return the feature vector of given node
 private:
@@ -73,14 +73,17 @@ private:
     QVector<GraphLet> SearchGraphLet10(int sid);
     QVector<GraphLet> SearchGraphLet11(int sid);
     QVector<GraphLet> SearchGraphLet13(int sid);
-    QVector<GraphLet> SearchGraphLet14(int sid);/// Bug...
+    QVector<GraphLet> SearchGraphLet14(int sid);
     QVector<GraphLet> SearchGraphLet15(int sid);
     QVector<GraphLet> SearchGraphLet16(int sid);
     QVector<GraphLet> SearchGraphLet17(int sid);
     QVector<GraphLet> SearchGraphLet18(int sid);
     QVector<GraphLet> SearchGraphLet19(int sid);
     QVector<GraphLet> SearchGraphLet20(int sid);
-    QVector<GraphLet> SearchGraphLet21(int sid);
+    QVector<GraphLet> SearchGraphLet21(int sid);// Bug...
+    QVector<GraphLet> SearchGraphLet22(int sid);// Bug...
+
+    QVector<GraphLet> SearchGraphLet27(int sid);
 
 };
 
