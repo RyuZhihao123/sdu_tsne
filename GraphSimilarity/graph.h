@@ -80,10 +80,15 @@ private:
     QVector<GraphLet> SearchGraphLet18(int sid);
     QVector<GraphLet> SearchGraphLet19(int sid);
     QVector<GraphLet> SearchGraphLet20(int sid);
-    QVector<GraphLet> SearchGraphLet21(int sid);// Bug...
-    QVector<GraphLet> SearchGraphLet22(int sid);// Bug...
-
+    QVector<GraphLet> SearchGraphLet21(int sid);
+    QVector<GraphLet> SearchGraphLet22(int sid);
+    QVector<GraphLet> SearchGraphLet23(int sid);
+    QVector<GraphLet> SearchGraphLet24(int sid);
+    QVector<GraphLet> SearchGraphLet25(int sid);
+    QVector<GraphLet> SearchGraphLet26(int sid);
     QVector<GraphLet> SearchGraphLet27(int sid);
+    QVector<GraphLet> SearchGraphLet28(int sid);
+    QVector<GraphLet> SearchGraphLet29(int sid);
 
 };
 
