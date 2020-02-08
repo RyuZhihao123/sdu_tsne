@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/shader">
+        <file>res/GraphFShader.glsl</file>
+        <file>res/GraphVShader.glsl</file>
+        <file>res/PointsFShader.glsl</file>
+        <file>res/PointsVShader.glsl</file>
+        <file>res/barkFShader.glsl</file>
+        <file>res/barkVShader.glsl</file>
+        <file>res/tsne_backupcolors</file>
+    </qresource>
+</RCC>
