@@ -44,7 +44,7 @@ def read_fm_data(filepath):
             items = line.split()
             # items = line.split("\t+")
             pt = [float(i) for i in items[:-1]]
-            # print(pt)
+            # positions
             pts.append(pt)
             # labels
             labels.append(int(items[-1]))
@@ -61,7 +61,7 @@ def read_fm_data(filepath):
             i = int(items[0])
             # WE discard distance here
             for n in range(N):
-                j = items[n*2+1]
+                j = int(items[n*2+1])
                 # n*2+2
                 edges.append((i, j))
 
@@ -407,52 +407,124 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
     return Y1
 
 
-def drawGraph(Y, E, plt):
+# def drawGraph(Y, E, plt):
+#     G = nx.DiGraph()
+#     Y_ = Y.tolist()
+#     for i in range(len(Y_)):
+#         y = Y_[i]
+#         print(i)
+#         G.add_node(i, pos = (y[0], y[1]))
+#     for e in E:
+#         G.add_edge(e[0], e[1])
+#     # plt.draw_networkx(G, ax = ax)
+#     nx.draw(G)
+#     plt.show()
+
+
+def drawGraph(Y, E, labels, match_edges, plt, ax):
     G = nx.DiGraph()
+    G.add_edges_from(E)
     Y_ = Y.tolist()
-    for i in range(len(Y_)):
-        y = Y_[i]
-        print(i)
-        G.add_node(i, pos = (y[0], y[1]))
+    pos = {}
+    for l in range(len(Y_)):
+        y = Y_[l]
+        print(l)
+        # G.add_node(i, pos = (y[0], y[1]))
+        pos[l] = (y[0], y[1])
+    # for e in E:
+    #     G.add_edge(e[0], e[1])
+    
+    # filter by label
+    labelSet = []
+    for l in labels:
+        if l not in labelSet:
+            labelSet.append(l)
+
+    fpos = {}
+    for l in labelSet:
+        # filter data points for each label
+        fpos[l] = {i: pos[i] for i in range(len(labels)) if labels[i] == l}
+
+    # print(fpos)
+    # for each label use different colors
+    cmap = ['r', 'b', 'y', 'g']
+    for l in fpos:
+        print(fpos[l].keys())
+        print(fpos[l].values())
+        nx.draw_networkx_nodes(G, pos = fpos[l], nodelist = fpos[l].keys(), node_color= cmap[l], ax = ax)
+    nx.draw_networkx_labels(G, pos, font_color='w')
+
+    # similar edges with black
+    # similar edges with red
+    red_edges = []
+    black_edges = []
     for e in E:
-        G.add_edge(e[0], e[1])
-    nx.draw(G)
-    plt.show()
+        if e in match_edges:
+            black_edges.append(e)
+        else:
+            red_edges.append(e)
+
+    nx.draw_networkx_edges(G, pos, edgelist=black_edges, edge_color='k', arrows=True)
+    nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
+    # nx.draw(G)
+    
 
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
     # read high dimensioal data
-    hdd0 = "../data/highdims/test/fm_2.txt"
-    hdd1 = "../data/highdims/test/fm_3.txt"
-    sm = "../data/similarities/test/similar_edges_2_3.txt"
+    hdd0 = "../data/highdims/edges/fm_0.txt" #../data/highdims/test/fm_2.txt
+    hdd1 = "../data/highdims/edges/fm_1.txt" #../data/highdims/test/fm_3.txt
+    sm = "../data/similarities/edges/similar_edges_0_1.txt" #../data/similarities/test/similar_edges_2_3.txt
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
     S, M = read_similarity(sm)
 
     # first we apply t-sne to D0
     Y0 = tsne(X0, 2, 3, 20.0)
+    # then we apply joint-tsne to D1
     Y1 = joint_tsne(Y0, X1, 2, 3, 20.0)
 
+
+    margin_top = 10
+    margin_bottom = 10
+    margin_left = 10
+    margin_right = 10
     # min_x, max_x
-    minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0])])
-    maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0])])
+    minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0])]) - margin_left
+    maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0])]) + margin_right
     # min_y, max_y
-    minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1])])
-    maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1])])
+    minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1])]) - margin_bottom
+    maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1])]) + margin_top
 
-    # draw two scatterplots
-    plt.figure(1)
-    plt.xlim(minX, maxX)
-    plt.ylim(minY, maxY)
-    # drawGraph(Y0, edges0, plt)
-    plt.scatter(Y0[:, 0], Y0[:, 1], 20, labels0)#
+    FLAG_ = False # SCATTER_
 
-    plt.figure(2)
-    plt.xlim(minX, maxX)
-    plt.ylim(minY, maxY)
-    # drawGraph(Y1, edges1, plt)
-    plt.scatter(Y1[:, 0], Y1[:, 1], 20, labels1)# 
+    '''1. draw graphs'''
+    '''2. draw scatterplots'''
+    if FLAG_ == True:
+        fig0, ax0 = plt.subplots()
+        # nx.draw_networkx_nodes(..., ax=ax)
+        ax0.set(xlim = (minX, maxX), ylim = (minY, maxY))
+        ax0.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+        drawGraph(Y = Y0, E = edges0, labels = labels0, match_edges = M, plt = plt, ax = ax0)
 
 
-    plt.show()
+        fig1, ax1 = plt.subplots()
+        # nx.draw_networkx_nodes(..., ax=ax)
+        ax1.set(xlim = (minX, maxX), ylim = (minY, maxY))
+        ax1.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+        drawGraph(Y = Y1, E = edges1, labels = labels1, match_edges = M, plt = plt, ax = ax1)
+
+        plt.show()
+    else:
+        plt.figure(1)
+        plt.xlim(minX, maxX)
+        plt.ylim(minY, maxY)
+        plt.scatter(Y0[:, 0], Y0[:, 1], 20, labels0)#
+
+        plt.figure(2)
+        plt.xlim(minX, maxX)
+        plt.ylim(minY, maxY)
+        plt.scatter(Y1[:, 0], Y1[:, 1], 20, labels1)# 
+
+        plt.show()

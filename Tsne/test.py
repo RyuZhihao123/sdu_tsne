@@ -1,6 +1,8 @@
 #encoding = utf-8
 import numpy as np
 import pylab
+import matplotlib.pyplot as plt
+import networkx as nx
 
 # n = 3
 
@@ -21,9 +23,11 @@ import pylab
 # n0 = 7
 # no_dims = 2
 
-
-a = np.array([0, 1, 2, 3, 4])
-print(np.min(a))
-print(np.max(a))
-print(np.max(np.min(a), np.max(a)))
 # print(d3)
+
+G = nx.DiGraph()
+G.add_node(0, pos=(0, 0))
+G.add_node(1, pos=(1, 1))
+G.add_edge(0, 1)
+nx.draw(G)
+plt.show()
