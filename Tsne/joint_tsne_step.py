@@ -22,7 +22,7 @@ import networkx as nx
 # # accepted from C++ program
 M = []  # (eij, ekl) 
 S = {}  # (eij, ekl): s
-beta = 0.0001
+beta = 0.00001
 
 def read_fm_data(filepath):
     pts = []
@@ -184,7 +184,7 @@ def pca(X=np.array([]), no_dims=50):
     return Y
 
 
-def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
+def tsne(X=np.array([]), Y_I = np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     """
         Runs t-SNE on the dataset in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -207,14 +207,16 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     final_momentum = 0.8
     eta = 500
     min_gain = 0.01
-    Y = np.random.randn(n, no_dims)
-    # Y = np.array([[ 1.52340745, 1.37944798],
-    # [ 1.04632537 , 1.94709421],
-    # [-1.09114757 , -0.47318732],
-    # [-1.17815386 , -2.53435897],
-    # [ 0.52436536 , 1.19015593],
-    # [-0.65184383 , 0.65576772],
-    # [ 0.162397  , -1.43788719]])
+
+    if Y_I.shape[0] == 0:# initial solution is not given
+        print("Random generate initials.")
+        Y = np.random.randn(n, no_dims)
+    else:
+        print("Initials are given.")
+        Y = Y_I
+
+    Y_1_I = Y       # store initial and return
+
 
     dY = np.zeros((n, no_dims))
     iY = np.zeros((n, no_dims))
@@ -265,10 +267,12 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
             P = P / 4.
 
     # Return solution
-    return Y
+    return Y, Y_1_I
 
 
-def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
+def joint_tsne(Y_0=np.array([]), 
+                X_1=np.array([]),
+                Y_1_I = np.array([]), 
                no_dims=2,
                initial_dims_1=50,
                perplexity=30.0):
@@ -298,7 +302,8 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
     eta = 500
     min_gain = 0.01
 
-    Y1 = np.random.randn(n1, no_dims)
+    # Y1 = np.random.randn(n1, no_dims)
+    Y1 = Y_1_I
     # Y1 = np.array([[ 1.52340745, 1.37944798],
     # [ 1.04632537 , 1.94709421],
     # [-1.09114757 , -0.47318732],
@@ -325,7 +330,7 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
         # Compute pairwise affinities
         sum_Y1 = np.sum(np.square(Y1), 1)
         num1 = -2. * np.dot(Y1, Y1.T)
-        num1 = 1. / (1. + np.add(np.add(num1, sum_Y1).T, sum_Y1))
+        num1 = 1. / (1. + np.add(np.add(num1, sum_Y1).T, sum_Y1)) # qij分子 ????
         num1[range(n1), range(n1)] = 0.
         Q1 = num1 / np.sum(num1)  # qij
         Q1 = np.maximum(Q1, 1e-12)
@@ -378,7 +383,8 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
         Compute current value of cost function
         '''
         if (iter + 1) % 10 == 0:
-            C = np.sum(P1 * np.log(P1 / Q1))
+            C0 = np.sum(P1 * np.log(P1 / Q1))
+            C1= 0
             # + penalty term
             for m in M:
                 # get matching edge
@@ -394,10 +400,10 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
                 d1 = np.subtract(Y1[k, :], Y1[l, :])
                 # print(d0)
                 # print(d0)
-                C += beta * S[m] * np.sum(np.square(np.subtract(d0, d1)))
-
+                C1 += beta * S[m] * np.sum(np.square(np.subtract(d0, d1)))
+            C = C0+ C1
             # np.sum()
-            print("Iteration %d: error is %f" % (iter + 1, C))
+            print("Iteration %d: KL error is %f similarity error is %f" % (iter + 1, C0, C1))
 
         # Stop lying about P-values
         if iter == 100:
@@ -407,28 +413,13 @@ def joint_tsne(Y_0=np.array([]), X_1=np.array([]),
     return Y1
 
 
-# def drawGraph(Y, E, plt):
-#     G = nx.DiGraph()
-#     Y_ = Y.tolist()
-#     for i in range(len(Y_)):
-#         y = Y_[i]
-#         print(i)
-#         G.add_node(i, pos = (y[0], y[1]))
-#     for e in E:
-#         G.add_edge(e[0], e[1])
-#     # plt.draw_networkx(G, ax = ax)
-#     nx.draw(G)
-#     plt.show()
-
-
-def drawGraph(Y, E, labels, match_edges, plt, ax):
+def drawGraph(Y, E, labels, match_edges, ax):
     G = nx.DiGraph()
     G.add_edges_from(E)
     Y_ = Y.tolist()
     pos = {}
     for l in range(len(Y_)):
         y = Y_[l]
-        print(l)
         # G.add_node(i, pos = (y[0], y[1]))
         pos[l] = (y[0], y[1])
     # for e in E:
@@ -447,10 +438,10 @@ def drawGraph(Y, E, labels, match_edges, plt, ax):
 
     # print(fpos)
     # for each label use different colors
-    cmap = ['r', 'b', 'y', 'g']
+    cmap = ['r', 'b', 'y', 'g'] #...
     for l in fpos:
-        print(fpos[l].keys())
-        print(fpos[l].values())
+        # print(fpos[l].keys())
+        # print(fpos[l].values())
         nx.draw_networkx_nodes(G, pos = fpos[l], nodelist = fpos[l].keys(), node_color= cmap[l], ax = ax)
     nx.draw_networkx_labels(G, pos, font_color='w')
 
@@ -466,30 +457,38 @@ def drawGraph(Y, E, labels, match_edges, plt, ax):
 
     nx.draw_networkx_edges(G, pos, edgelist=black_edges, edge_color='k', arrows=True)
     nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
-    # nx.draw(G)
     
 
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
-    # read high dimensioal data
-    hdd0 = "../data/highdims/edges/fm_0.txt" #../data/highdims/test/fm_2.txt
-    hdd1 = "../data/highdims/edges/fm_1.txt" #../data/highdims/test/fm_3.txt
-    sm = "../data/similarities/edges/similar_edges_0_1.txt" #../data/similarities/test/similar_edges_2_3.txt
+    ''' read high dimensioal data '''
+    #../data/highdims/test/fm_2.txt 
+    #../data/highdims/edges/fm_1.txt
+    hdd0 = "../data/highdims/test/fm_2.txt" 
+
+    #../data/highdims/test/fm_3.txt 
+    #../data/highdims/edges/fm_2.txt
+    hdd1 = "../data/highdims/test/fm_3.txt" 
+    
+    #../data/similarities/test/similar_edges_2_3.txt 
+    #../data/similarities/edges/similar_edges_1_2.txt
+    sm = "../data/similarities/test/similar_edges_2_3.txt" 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
     S, M = read_similarity(sm)
+ 
+    ''' first we apply t-sne to D0 '''
+    Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = 3, perplexity = 20.0)
+    ''' then we apply joint-tsne to D1 '''
+    # Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
+    Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
 
-    # first we apply t-sne to D0
-    Y0 = tsne(X0, 2, 3, 20.0)
-    # then we apply joint-tsne to D1
-    Y1 = joint_tsne(Y0, X1, 2, 3, 20.0)
 
-
-    margin_top = 10
-    margin_bottom = 10
-    margin_left = 10
-    margin_right = 10
+    margin_top = 20
+    margin_bottom = 20
+    margin_left = 20
+    margin_right = 20
     # min_x, max_x
     minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0])]) - margin_left
     maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0])]) + margin_right
@@ -497,7 +496,7 @@ if __name__ == "__main__":
     minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1])]) - margin_bottom
     maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1])]) + margin_top
 
-    FLAG_ = False # SCATTER_
+    FLAG_ = True # True False
 
     '''1. draw graphs'''
     '''2. draw scatterplots'''
@@ -506,14 +505,14 @@ if __name__ == "__main__":
         # nx.draw_networkx_nodes(..., ax=ax)
         ax0.set(xlim = (minX, maxX), ylim = (minY, maxY))
         ax0.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph(Y = Y0, E = edges0, labels = labels0, match_edges = M, plt = plt, ax = ax0)
+        drawGraph(Y = Y0, E = edges0, labels = labels0, match_edges = M, ax = ax0)
 
 
         fig1, ax1 = plt.subplots()
         # nx.draw_networkx_nodes(..., ax=ax)
         ax1.set(xlim = (minX, maxX), ylim = (minY, maxY))
         ax1.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph(Y = Y1, E = edges1, labels = labels1, match_edges = M, plt = plt, ax = ax1)
+        drawGraph(Y = Y1, E = edges1, labels = labels1, match_edges = M, ax = ax1)
 
         plt.show()
     else:

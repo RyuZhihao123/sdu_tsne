@@ -25,9 +25,16 @@ import networkx as nx
 
 # print(d3)
 
-G = nx.DiGraph()
-G.add_node(0, pos=(0, 0))
-G.add_node(1, pos=(1, 1))
-G.add_edge(0, 1)
-nx.draw(G)
-plt.show()
+# G = nx.DiGraph()
+# G.add_node(0, pos=(0, 0))
+# G.add_node(1, pos=(1, 1))
+# G.add_edge(0, 1)
+# nx.draw(G)
+# plt.show()
+
+arr1 = np.array([1, 2, 3, 4, 5])
+arr2 = np.array([1, 2, 3, 4, 5])
+print(np.multiply(arr1, arr2))# bit mul
+print(arr1*arr2)# bit mul
+print(np.dot(arr1, arr2))# dot product
+# print(np.tile(arr1, (2, 2)))    
