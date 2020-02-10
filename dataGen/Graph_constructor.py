@@ -61,12 +61,13 @@ def DisturbEdges(inputs, kd_tree, keep_ratio = 0.7):
 
     np.arange(0, points.shape[0])
     ids = range(0,config.pts_size)
+
     # keep_edges 相似性的边
     keep_edges = []
     while len(keep_edges) != edge_size*keep_ratio:
         keep_ids_0= np.random.randint(0, config.pts_size)
         keep_ids_1= np.random.randint(0, config.pts_size)
-        if keep_ids_0 == keep_ids_1:
+        if keep_ids_0 == keep_ids_1 or [keep_ids_0, keep_ids_1] in keep_edges: # ensure no self-loop and duplicate
             continue
         keep_edges.append([keep_ids_0, keep_ids_1])
     
@@ -80,7 +81,7 @@ def DisturbEdges(inputs, kd_tree, keep_ratio = 0.7):
             if [i, j] not in keep_edges:
                 dist_edges.append([i, j])
 
-    # disturb edges 
+    # disturb edge endpoints 
     for [i, j] in dist_edges:
         _moveVec_i = np.random.uniform(-0.5,0.5,(dim))
         _moveVec_j = np.random.uniform(-0.5,0.5,(dim))

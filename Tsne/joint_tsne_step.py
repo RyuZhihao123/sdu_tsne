@@ -465,15 +465,15 @@ if __name__ == "__main__":
     ''' read high dimensioal data '''
     #../data/highdims/test/fm_2.txt 
     #../data/highdims/edges/fm_1.txt
-    hdd0 = "../data/highdims/test/fm_2.txt" 
+    hdd0 = "../data/highdims/edges/fm_1.txt" 
 
     #../data/highdims/test/fm_3.txt 
     #../data/highdims/edges/fm_2.txt
-    hdd1 = "../data/highdims/test/fm_3.txt" 
+    hdd1 = "../data/highdims/edges/fm_2.txt" 
     
     #../data/similarities/test/similar_edges_2_3.txt 
     #../data/similarities/edges/similar_edges_1_2.txt
-    sm = "../data/similarities/test/similar_edges_2_3.txt" 
+    sm = "../data/similarities/edges/similar_edges_1_2.txt" 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
     S, M = read_similarity(sm)
@@ -496,7 +496,7 @@ if __name__ == "__main__":
     minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1])]) - margin_bottom
     maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1])]) + margin_top
 
-    FLAG_ = True # True False
+    FLAG_ = False # True False
 
     '''1. draw graphs'''
     '''2. draw scatterplots'''
@@ -520,10 +520,27 @@ if __name__ == "__main__":
         plt.xlim(minX, maxX)
         plt.ylim(minY, maxY)
         plt.scatter(Y0[:, 0], Y0[:, 1], 20, labels0)#
+         # then we highlight points with dissimilar edges
+
+        c = 0
+        for e in edges0:
+            if e not in M:
+                plt.plot(Y0[e[0], 0], Y0[e[0], 1], 'ro')
+                c += 1
+                # plt.plot(Y0[e[1]], 'ro')
+                # plt.plot(e[1][0], e[1][1], 'r')
+        print("dissimilar edge number: " + str(c))
+        print("total edge number: " + str(len(edges0)))
 
         plt.figure(2)
         plt.xlim(minX, maxX)
         plt.ylim(minY, maxY)
         plt.scatter(Y1[:, 0], Y1[:, 1], 20, labels1)# 
+
+        for e in edges1:
+            if e not in M:
+                plt.plot(Y1[e[0], 0], Y1[e[0], 1], 'ro')
+                # plt.plot(Y1[e[1]], 'ro')
+       
 
         plt.show()
