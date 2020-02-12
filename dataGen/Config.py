@@ -2,14 +2,11 @@ import os
 import shutil
 
 class Configuration:
-
-    dir_graph = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/edges/"  # 点集的文件夹
-    dir_similarity = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/similarities/edges/"  # 相似性文件夹（哪一些点是相似的）
-    # dir_tsneoutputs = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/outputs/"  # tsne降维后的结果
-    pts_size = 500  # 图中总共点的数量
-    # edge_size = 499 # 图中总共边的数量
-
-    # path_similarity = "c:/Users/liuzh/Desktop/similarities/similar_ids_{}_{}.txt"
+    pts_size = 50  # 图中总共点的数量
+    # keep_ratio = 0.9
+    dir_graph = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/{}/".format(pts_size)             # 点集的文件夹
+    dir_similarity = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/similarities/{}/".format(pts_size)  # 相似性文件夹（哪一些点和边是相似的）
+    dir_tsneoutputs = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/results/{}/".format(pts_size) # tsne降维后的结果
 
 def ClearDir(dirpath):
     if os.path.exists(dirpath):

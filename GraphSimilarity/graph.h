@@ -55,7 +55,8 @@ public:
     void clear();
 
 
-    QVector<GraphLet> SearchGraphLet(int gid, int sid); // Search graphlet type gid starting from node sid
+    // Search graphlet type gid starting from node sid
+    QVector<GraphLet> SearchGraphLet(int gid, int sid);
     QVector<float> calGFD(int sid);
     QVector<float> localGFD(int sid);  // return the feature vector of given node
 private:

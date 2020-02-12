@@ -32,9 +32,13 @@ import networkx as nx
 # nx.draw(G)
 # plt.show()
 
-arr1 = np.array([1, 2, 3, 4, 5])
-arr2 = np.array([1, 2, 3, 4, 5])
-print(np.multiply(arr1, arr2))# bit mul
-print(arr1*arr2)# bit mul
-print(np.dot(arr1, arr2))# dot product
-# print(np.tile(arr1, (2, 2)))    
+# arr1 = np.array([1, 2, 3, 4, 5])
+# arr2 = np.array([1, 2, 3, 4, 5])
+# print(np.multiply(arr1, arr2))# bit mul
+# print(arr1*arr2)# bit mul
+# print(np.dot(arr1, arr2))# dot product
+
+d0 = [1, -1]
+d1 = [-1, 1]
+
+print(np.sum(np.square(np.subtract(d0, d1))))
