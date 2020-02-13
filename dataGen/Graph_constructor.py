@@ -205,13 +205,15 @@ if __name__ == '__main__':
         ''' store similar edges '''
         file = open(config.dir_similarity + "similar_edges_{}_{}.txt".format(layer - 1, layer), 'w')
         for [i, j] in keep_edges:
-            file.write(str(i) + "\t" + str(j) + "\n")
+            # default similarity is 1
+            file.write(str(i) + "\t" + str(j) + "\t" + str(i) + "\t" + str(j) + "\t1.0\n")
         file.close()
 
         ''' store similar points '''
         file = open(config.dir_similarity + "similar_points_{}_{}.txt".format(layer - 1, layer), 'w')
         for i in keep_ids:
-            file.write(str(i) + "\n")
+            # default similarity is 1
+            file.write(str(i) + "\t" + str(i) + "\t1.0\n")
         file.close()
 
 

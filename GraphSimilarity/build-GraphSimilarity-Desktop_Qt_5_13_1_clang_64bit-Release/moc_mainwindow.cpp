@@ -22,8 +22,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[15];
-    char stringdata0[193];
+    QByteArrayData data[25];
+    char stringdata0[284];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -46,14 +46,27 @@ QT_MOC_LITERAL(10, 119, 7), // "edgeNum"
 QT_MOC_LITERAL(11, 127, 21), // "on_comboBox_activated"
 QT_MOC_LITERAL(12, 149, 5), // "index"
 QT_MOC_LITERAL(13, 155, 19), // "on_btnClear_clicked"
-QT_MOC_LITERAL(14, 175, 17) // "on_btnGFD_clicked"
+QT_MOC_LITERAL(14, 175, 17), // "on_btnGFD_clicked"
+QT_MOC_LITERAL(15, 193, 17), // "on_btnSim_clicked"
+QT_MOC_LITERAL(16, 211, 12), // "read_fm_data"
+QT_MOC_LITERAL(17, 224, 8), // "fileName"
+QT_MOC_LITERAL(18, 233, 8), // "saveSims"
+QT_MOC_LITERAL(19, 242, 9), // "MatchList"
+QT_MOC_LITERAL(20, 252, 9), // "matchList"
+QT_MOC_LITERAL(21, 262, 8), // "calcSims"
+QT_MOC_LITERAL(22, 271, 6), // "Graph&"
+QT_MOC_LITERAL(23, 278, 2), // "g1"
+QT_MOC_LITERAL(24, 281, 2) // "g2"
 
     },
     "MainWindow\0slot_openGraph\0\0slot_saveGraph\0"
     "slot_calculateGraphLet\0slot_btnNext\0"
     "on_btnGen_clicked\0genGraph\0Graph\0"
     "nodeNum\0edgeNum\0on_comboBox_activated\0"
-    "index\0on_btnClear_clicked\0on_btnGFD_clicked"
+    "index\0on_btnClear_clicked\0on_btnGFD_clicked\0"
+    "on_btnSim_clicked\0read_fm_data\0fileName\0"
+    "saveSims\0MatchList\0matchList\0calcSims\0"
+    "Graph&\0g1\0g2"
 };
 #undef QT_MOC_LITERAL
 
@@ -63,7 +76,7 @@ static const uint qt_meta_data_MainWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      11,   14, // methods
+      15,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -71,17 +84,21 @@ static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   69,    2, 0x08 /* Private */,
-       3,    0,   70,    2, 0x08 /* Private */,
-       4,    0,   71,    2, 0x08 /* Private */,
-       5,    0,   72,    2, 0x08 /* Private */,
-       6,    0,   73,    2, 0x08 /* Private */,
-       7,    2,   74,    2, 0x08 /* Private */,
-       7,    1,   79,    2, 0x28 /* Private | MethodCloned */,
-       7,    0,   82,    2, 0x28 /* Private | MethodCloned */,
-      11,    1,   83,    2, 0x08 /* Private */,
-      13,    0,   86,    2, 0x08 /* Private */,
-      14,    0,   87,    2, 0x08 /* Private */,
+       1,    0,   89,    2, 0x08 /* Private */,
+       3,    0,   90,    2, 0x08 /* Private */,
+       4,    0,   91,    2, 0x08 /* Private */,
+       5,    0,   92,    2, 0x08 /* Private */,
+       6,    0,   93,    2, 0x08 /* Private */,
+       7,    2,   94,    2, 0x08 /* Private */,
+       7,    1,   99,    2, 0x28 /* Private | MethodCloned */,
+       7,    0,  102,    2, 0x28 /* Private | MethodCloned */,
+      11,    1,  103,    2, 0x08 /* Private */,
+      13,    0,  106,    2, 0x08 /* Private */,
+      14,    0,  107,    2, 0x08 /* Private */,
+      15,    0,  108,    2, 0x08 /* Private */,
+      16,    1,  109,    2, 0x08 /* Private */,
+      18,    2,  112,    2, 0x08 /* Private */,
+      21,    2,  117,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -95,6 +112,10 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void, QMetaType::Int,   12,
     QMetaType::Void,
     QMetaType::Void,
+    QMetaType::Void,
+    0x80000000 | 8, QMetaType::QString,   17,
+    QMetaType::Void, 0x80000000 | 19, QMetaType::QString,   20,   17,
+    0x80000000 | 19, 0x80000000 | 22, 0x80000000 | 22,   23,   24,
 
        0        // eod
 };
@@ -119,6 +140,12 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 8: _t->on_comboBox_activated((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 9: _t->on_btnClear_clicked(); break;
         case 10: _t->on_btnGFD_clicked(); break;
+        case 11: _t->on_btnSim_clicked(); break;
+        case 12: { Graph _r = _t->read_fm_data((*reinterpret_cast< const QString(*)>(_a[1])));
+            if (_a[0]) *reinterpret_cast< Graph*>(_a[0]) = std::move(_r); }  break;
+        case 13: _t->saveSims((*reinterpret_cast< const MatchList(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 14: { MatchList _r = _t->calcSims((*reinterpret_cast< Graph(*)>(_a[1])),(*reinterpret_cast< Graph(*)>(_a[2])));
+            if (_a[0]) *reinterpret_cast< MatchList*>(_a[0]) = std::move(_r); }  break;
         default: ;
         }
     }
@@ -153,13 +180,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 11)
+        if (_id < 15)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 11;
+        _id -= 15;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 11)
+        if (_id < 15)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 11;
+        _id -= 15;
     }
     return _id;
 }

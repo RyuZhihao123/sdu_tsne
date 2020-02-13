@@ -103,7 +103,7 @@ void Graph::clear()
 }
 
 
-void Graph::GetGraphlets(int gid)
+void Graph::GetGraphletFromGraph(int gid)
 {
     assert(gid >= 0 && gid < ALL_GRAPHLET);
 
@@ -122,104 +122,127 @@ void Graph::GetGraphlets(int gid)
 
 QVector<GraphLet> Graph::SearchGraphLet(int gid, int sid)
 {
+    QVector<GraphLet> glets;
     switch (gid) {
     case 0:
-        return SearchGraphLet1(sid);
+        glets = SearchGraphLet1(sid);
+        break;
     case 1:
-        return SearchGraphLet2(sid);
+        glets = SearchGraphLet2(sid);
+        break;
     case 2:
-        return SearchGraphLet3(sid);
+        glets = SearchGraphLet3(sid);
+        break;
     case 3:
-        return SearchGraphLet4(sid);
+        glets = SearchGraphLet4(sid);
+        break;
     case 4:
-        return SearchGraphLet5(sid);
+        glets = SearchGraphLet5(sid);
+        break;
     case 5:
-        return SearchGraphLet6(sid);
+        glets = SearchGraphLet6(sid);
+        break;
     case 6:
-        return SearchGraphLet7(sid);
+        glets = SearchGraphLet7(sid);
+        break;
     case 7:
-        return SearchGraphLet8(sid);
+        glets = SearchGraphLet8(sid);
+        break;
     case 8:
-        return SearchGraphLet9(sid);
+        glets = SearchGraphLet9(sid);
+        break;
     case 9:
-        return SearchGraphLet10(sid);
+        glets = SearchGraphLet10(sid);
+        break;
     case 10:
-        return SearchGraphLet11(sid);
+        glets = SearchGraphLet11(sid);
+        break;
     case 12:
-//        qDebug() << "SearchGraphLet13";
-        return SearchGraphLet13(sid);
+        //        qDebug() << "SearchGraphLet13";
+        glets = SearchGraphLet13(sid);
+        break;
     case 13:
-        return SearchGraphLet14(sid);
+        glets = SearchGraphLet14(sid);
+        break;
     case 14:
-        return SearchGraphLet15(sid);
+        glets = SearchGraphLet15(sid);
+        break;
     case 15:
-        return SearchGraphLet16(sid);
+        glets = SearchGraphLet16(sid);
+        break;
     case 16:
-        return SearchGraphLet17(sid);
+        glets = SearchGraphLet17(sid);
+        break;
     case 17:
-        return SearchGraphLet18(sid);
+        glets = SearchGraphLet18(sid);
+        break;
     case 18:
-        return SearchGraphLet19(sid);
+        glets = SearchGraphLet19(sid);
+        break;
     case 19:
-        return SearchGraphLet20(sid);
+        glets = SearchGraphLet20(sid);
+        break;
     case 20:
-        return SearchGraphLet21(sid);
+        glets = SearchGraphLet21(sid);
+        break;
     case 21:
-        return SearchGraphLet22(sid);
+        glets = SearchGraphLet22(sid);
+        break;
     case 22:
-        return SearchGraphLet23(sid);
+        glets = SearchGraphLet23(sid);
+        break;
     case 23:
-        return SearchGraphLet24(sid);
+        glets = SearchGraphLet24(sid);
+        break;
     case 24:
-        return SearchGraphLet25(sid);
+        glets = SearchGraphLet25(sid);
+        break;
     case 25:
-        return SearchGraphLet26(sid);
+        glets = SearchGraphLet26(sid);
+        break;
     case 26:
-        return SearchGraphLet27(sid);
+        glets = SearchGraphLet27(sid);
+        break;
     case 27:
-        return SearchGraphLet28(sid);
+        glets = SearchGraphLet28(sid);
+        break;
     case 28:
-        return SearchGraphLet29(sid);
+        glets = SearchGraphLet29(sid);
+        break;
     default:
-        return SearchGraphLet1(sid);
+        glets = SearchGraphLet1(sid);
+        break;
     }
+    return glets;
 }
 
-QVector<float> Graph::calGFD(int sid)
+QVector<QVector<GraphLet> > Graph::GetGraphLets(int sid)
 {
-    QVector<float> GFD;
+    QVector<QVector<GraphLet>> allGlets(ALL_GRAPHLET);
 
-    int sum = 0;
-    for (int i = 0; i < ALL_GRAPHLET; i++)
+    for (int i = 0; i < allGlets.size(); i++)
     {
-        int f = SearchGraphLet(i, sid).size();
-        GFD.push_back((float)f);
-        sum += f;
+        allGlets[i] = SearchGraphLet(i, sid);
     }
 
-    for (int i = 0; i < GFD.size(); i++)
-    {
-        GFD[i] /= sum;
-    }
-
-    return GFD;
+    return allGlets;
 }
 
-QVector<float> Graph::localGFD(int sid)
+QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
 {
-    QVector<QVector<float>> allGFDs;
-
     typedef QPair<int, int> tuple;  // first is level, second is node
 
-    QVector<bool> visited(m_nodes.size(), false);// ensure each node is visited once
 
+    QVector<bool> visited(m_nodes.size(), false);// ensure each node is visited once
     visited[sid] = true;
 
     QQueue<tuple> q;
     q.enqueue(tuple(0, sid));
 
     int llevel = 0;
-    // BFS for MAX_SEARCH_RANGE times
+    QVector<QVector<GraphLet>> neighborGlets(ALL_GRAPHLET * MAX_SEARCH_RANGE);
+    QVector<QVector<GraphLet>> cLevelGlets(ALL_GRAPHLET);
+    // BFS, limited in neighbor size of MAX_SEARCH_RANGE
     while(!q.isEmpty())
     {
         // top
@@ -232,6 +255,13 @@ QVector<float> Graph::localGFD(int sid)
 
         if (clevel != llevel)
         {
+            // store graphlets found on last level
+            std::copy(cLevelGlets.begin(), cLevelGlets.end(), neighborGlets.begin() + llevel*ALL_GRAPHLET);
+            for (int i = 0; i < cLevelGlets.size(); i++)
+            {
+                cLevelGlets[i].clear();
+            }
+
             llevel = clevel;
             if (clevel >= MAX_SEARCH_RANGE)
             {
@@ -241,9 +271,15 @@ QVector<float> Graph::localGFD(int sid)
         }
 
 
-        QVector<float> GFD = calGFD(cnode);
-        allGFDs.push_back(GFD);
-
+        // accumulate graphlets found in this node
+        QVector<QVector<GraphLet>> glets = GetGraphLets(cnode);
+        for (int i = 0; i < glets.size(); i++)
+        {
+            for (int j = 0; j < glets[i].size(); j++)
+            {
+                cLevelGlets[i].push_back(glets[i][j]);
+            }
+        }
 
         // pop
         q.dequeue();
@@ -260,37 +296,59 @@ QVector<float> Graph::localGFD(int sid)
         }
     }
 
-    // average feature vector over all nodes within the range
-    QVector<float> v(ALL_GRAPHLET);
-    for (int i = 0; i < v.size(); i++)
+    return neighborGlets;
+}
+
+QVector<float> Graph::GetfeatureVector(int sid)
+{
+    QVector<QVector<GraphLet> > neighborGlets = GetNeighborGraphlets(sid);
+    assert(neighborGlets.size() == ALL_GRAPHLET * MAX_SEARCH_RANGE);
+
+    // De-duplicate each graphlet type
+    for (int i = 0; i < neighborGlets.size(); i++)
     {
-        for (int j = 0; j < allGFDs.size(); j++) {
-            v[i] += allGFDs[j][i];
-        }
-        v[i] /= allGFDs.size();
+        DedupGraphLets(neighborGlets[i]);
     }
-    return v;
+    //
+
+    // compute GFD for each level
+    QVector<float> featureVector(ALL_GRAPHLET * MAX_SEARCH_RANGE);
+    for (int i = 0; i < MAX_SEARCH_RANGE; i++)
+    {
+
+        GFD gfd(ALL_GRAPHLET);
+        int count = 0;
+        for (int j = 0; j < ALL_GRAPHLET; j++)
+        {
+            gfd[j] = neighborGlets[i*ALL_GRAPHLET + j].size();
+            count += neighborGlets[i*ALL_GRAPHLET + j].size();
+        }
+        for (int j = 0; j < gfd.size(); j++)
+        {
+            gfd[j] /= count;
+        }
+        // concat
+        std::copy(gfd.begin(), gfd.end(), featureVector.begin() + i*ALL_GRAPHLET);
+    }
+    return featureVector;
 }
 
 QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个点为起点找graphlet
 {
     // g1: n0->n1, n1->n2
-    QVector<bool> visited(m_nodes.size(),false);
     QVector<GraphLet> glets;
 
     int n0 = sid;
-    visited[n0] = true;
-
-    for(int i = 0; i<m_nodes[n0].childs.size(); ++i)
+    Node* t0 = GetNode(n0);
+    for(int i = 0; i<t0->childs.size(); ++i)
     {
-        int n1 = m_nodes[n0].childs[i];
-        visited[n1] = true;
+        int n1 = t0->childs[i];
 
         Node* t1 = GetNode(n1);
         for(int k=0; k<t1->childs.size(); ++k)
         {
             int n2 = t1->childs[k];
-            if(visited[n2])
+            if(n2 == n0)
                 continue;
 
             GraphLet tmp;
@@ -312,8 +370,7 @@ QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个�
 }
 
 
-
-QVector<GraphLet> Graph::SearchGraphLet2(int sid)   // 输入的当前以那个点为起点找graphlet
+QVector<GraphLet> Graph::SearchGraphLet2(int sid)
 {
     // g1: n0->n1, n1->n2, n2->n0
     QVector<GraphLet> glets;
@@ -2289,5 +2346,107 @@ QVector<GraphLet> Graph::SearchGraphLet29(int sid)
 
     }
     return glets;
+}
+
+void Graph::DedupGraphLets(QVector<GraphLet> &allGraphlets)
+{
+    std::sort(allGraphlets.begin(), allGraphlets.end(),
+              [this](GraphLet& glet1, GraphLet& glet2)
+    {
+        SortGraphLet(glet1);
+        SortGraphLet(glet2);
+
+        int nodeNum1 = glet1.size();
+        int nodeNum2 = glet2.size();
+        if (nodeNum1 != nodeNum2)
+        {
+            return nodeNum1 < nodeNum2;
+        }
+        // compare node id
+        for (int i = 0; i < nodeNum1; i++)
+        {
+            if (glet1[i].first != glet2[i].first)
+            {
+                return glet1[i].first < glet2[i].first;
+            }
+        }
+        // compare edge
+        for (int i = 0; i < nodeNum1; i++)
+        {
+            int edgeNum1 = glet1[i].second.size();
+            int edgeNum2 = glet2[i].second.size();
+            if (edgeNum1 != edgeNum2)
+            {
+                return edgeNum1 < edgeNum2;
+            }
+
+            for (int j = 0; j < edgeNum1; j++)
+            {
+                if (glet1[i].second[j] != glet2[i].second[j])
+                {
+                    return glet1[i].second[j] < glet2[i].second[j];
+                }
+            }
+        }
+
+        // two graphlets are the same
+        return true;
+    });
+
+    // find consecutive duplicated elements
+    int n = std::unique(allGraphlets.begin(), allGraphlets.end()) - allGraphlets.begin();
+    // remove last
+    int total = allGraphlets.size();
+    for (int i = n; i < total; i++)
+    {
+        allGraphlets.pop_back();
+    }
+}
+
+
+void Graph::SortGraphLet(GraphLet& glet) {
+    // sort nodes within the graphlet
+    std::sort(glet.begin(), glet.end(),
+              [](GraphLetNode& gnode1, GraphLetNode&gnode2)
+    {
+        // sort
+        return gnode1.first < gnode2.first;
+    }
+    );
+
+    // sort the out edges of each node
+    for (int i = 0; i < glet.size(); i++)
+    {
+        std::sort(glet[i].second.begin(), glet[i].second.end(), [](int a, int b)
+        {
+            return a < b;
+        });
+    }
+
+}
+
+bool Graph::GraphletEqual(const GraphLet &glet1, const GraphLet &glet2)
+{
+
+    if (glet1.size() != glet2.size())
+    {
+        return false;
+    }
+    for (int i = 0; i < glet1.size(); i++)
+    {
+        if (glet1[i].first != glet2[i].first)
+        {
+            return false;
+        }
+        for (int j = 0; j < glet1[i].second.size(); j++)
+        {
+            if (glet1[i].second[j] != glet2[i].second[j])
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 

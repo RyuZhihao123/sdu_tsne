@@ -70,32 +70,26 @@ def read_fm_data(filepath):
         return np.array(pts), labels, edges
 
 
-def read_similarity_edges(filepath):
-    M = []  # (eij, ekl)
-    S = {}
+def read_match_edges(filepath):
+    match_edges = {}
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
             line=line.strip('\n')
             items = line.split()
-            # e = (int(i) for i in items)
-            # push tuple
-            M.append((int(items[0]), int(items[1])))
+            match_edges[((int(items[0]), int(items[1])), 
+            (int(items[2]), int(items[3])))] = float(items[4])
 
-    # We assume that similarity weights are one
-    for m in M:
-        # print(m) ?? seems some problems
-        S[m] = 1.0
-    return S, M
+    return match_edges
 
-
-def read_similarity_points(filepath):
-    keep_ids = []
+def read_match_points(filepath):
+    match_points = {}
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
             line=line.strip('\n')
-            keep_ids.append(int(line))
+            items = line.split()
+            match_points[(int(items[0]), int(items[1]))] = float(items[2])
 
-    return keep_ids
+    return match_points
 
 def Hbeta(D=np.array([]), beta=1.0):
     """
@@ -280,8 +274,7 @@ def tsne(X=np.array([]), Y_I = np.array([]), no_dims=2, initial_dims=50, perplex
 def joint_tsne(Y_0=np.array([]), 
                 X_1=np.array([]),
                 Y_1_I = np.array([]), 
-                similarities = {},
-                match_edges = [],
+                match_edges = {},
                no_dims=2,
                initial_dims_1=50,
                perplexity=30.0):
@@ -349,7 +342,8 @@ def joint_tsne(Y_0=np.array([]),
                 # + penalty gradient
             for m in match_edges:
                  # get matching edge
-                eij = ekl = m
+                eij = m[0]
+                ekl = m[1]
 
                 vi = eij[0]
                 vj = eij[1]
@@ -362,7 +356,7 @@ def joint_tsne(Y_0=np.array([]),
                     d1 = np.subtract(Y1[i, :], Y1[vl, :])
                     # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1))
                     # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1)/len(match_edges))
-                    dY1[i, :] -= 2*_beta_*similarities[m]*(d0-d1)          
+                    dY1[i, :] -= 2*_beta_*match_edges[m]*(d0-d1)          
 
 
         # Perform the update
@@ -395,7 +389,8 @@ def joint_tsne(Y_0=np.array([]),
             # + penalty term
             for m in match_edges:
                 # get matching edge
-                eij = ekl = m
+                eij = m[0]
+                ekl = m[1]
 
                 i = eij[0]
                 j = eij[1]
@@ -407,7 +402,7 @@ def joint_tsne(Y_0=np.array([]),
                 d1 = np.subtract(Y1[k, :], Y1[l, :])
 
                 # C1 += (similarities[m] * np.sum(np.square(np.subtract(d0, d1)))/len(match_edges))  # output error without weignt
-                C1 += (similarities[m] * np.sum(np.square(np.subtract(d0, d1))))
+                C1 += (match_edges[m] * np.sum(np.square(np.subtract(d0, d1))))
                 # print(np.sum(np.square(np.subtract(d0, d1))))
                 
             C = C0 + _beta_ * C1
@@ -423,48 +418,48 @@ def joint_tsne(Y_0=np.array([]),
     return Y1
 
 
-def drawGraph(Y, E, labels, match_edges, ax):
-    G = nx.DiGraph()
-    G.add_edges_from(E)
-    Y_ = Y.tolist()
-    pos = {}
-    for l in range(len(Y_)):
-        y = Y_[l]
-        pos[l] = (y[0], y[1])
+# def drawGraph(Y, E, labels, match_edges, ax):
+#     G = nx.DiGraph()
+#     G.add_edges_from(E)
+#     Y_ = Y.tolist()
+#     pos = {}
+#     for l in range(len(Y_)):
+#         y = Y_[l]
+#         pos[l] = (y[0], y[1])
 
-    # filter by label
-    labelSet = []
-    for l in labels:
-        if l not in labelSet:
-            labelSet.append(l)
+#     # filter by label
+#     labelSet = []
+#     for l in labels:
+#         if l not in labelSet:
+#             labelSet.append(l)
 
-    fpos = {}
-    for l in labelSet:
-        # filter data points for each label
-        fpos[l] = {i: pos[i] for i in range(len(labels)) if labels[i] == l}
+#     fpos = {}
+#     for l in labelSet:
+#         # filter data points for each label
+#         fpos[l] = {i: pos[i] for i in range(len(labels)) if labels[i] == l}
 
-    # for each label use different colors
-    cmap = ['r', 'b', 'y', 'g'] #...
-    for l in fpos:
-        # print(fpos[l].keys())
-        # print(fpos[l].values())
-        nx.draw_networkx_nodes(G, pos = fpos[l], nodelist = fpos[l].keys(), node_color= cmap[l], ax = ax)
-    nx.draw_networkx_labels(G, pos, font_color='w')
+#     # for each label use different colors
+#     cmap = ['r', 'b', 'y', 'g'] #...
+#     for l in fpos:
+#         # print(fpos[l].keys())
+#         # print(fpos[l].values())
+#         nx.draw_networkx_nodes(G, pos = fpos[l], nodelist = fpos[l].keys(), node_color= cmap[l], ax = ax)
+#     nx.draw_networkx_labels(G, pos, font_color='w')
 
-    # similar edges with black
-    # similar edges with red
-    red_edges = []
-    black_edges = []
-    for e in E:
-        if e in match_edges:
-            black_edges.append(e)
-        else:
-            red_edges.append(e)
+#     # similar edges with black
+#     # similar edges with red
+#     red_edges = []
+#     black_edges = []
+#     for e in E:
+#         if e in match_edges:
+#             black_edges.append(e)
+#         else:
+#             red_edges.append(e)
 
-    nx.draw_networkx_edges(G, pos, edgelist=black_edges, edge_color='k', arrows=True)
-    nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
+#     nx.draw_networkx_edges(G, pos, edgelist=black_edges, edge_color='k', arrows=True)
+#     nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
     
-def drawGraph_(data, edges, labels, match_edges, 
+def drawGraph_(data, edges, labels, keep_edges, 
             fig_minX, fig_maxX, fig_minY, fig_maxY):
     plt.figure()
     G = nx.DiGraph()
@@ -479,7 +474,7 @@ def drawGraph_(data, edges, labels, match_edges,
     red_edges = []
     black_edges = []
     for e in edges:
-        if e in match_edges:
+        if e in keep_edges:
             black_edges.append(e)
         else:
             red_edges.append(e)
@@ -550,18 +545,36 @@ if __name__ == "__main__":
 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
-    S, M = read_similarity_edges(esm)    
-    keep_ids = read_similarity_points(psm)
+    
+    match_edges = read_match_edges(esm)    
+    match_points = read_match_points(psm)
 
     ''' first we apply t-sne to D0 '''
     Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' then we apply joint-tsne to D1 '''
-    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, similarities = S, match_edges = M, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
+    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' tsne to D1 comparison '''
     Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
 
 
+    for m in match_edges:
+        print(m)
+
+    keep_ids0 = []
+    keep_ids1 = []
+    for pair in match_points:
+        keep_ids0.append(pair[0])
+        keep_ids1.append(pair[1])
+
+    keep_edges0 = []
+    keep_edges1 = []
+    for pair in match_edges:
+        keep_edges0.append(pair[0])
+        keep_edges1.append(pair[1])
+
+
+    ''' compute the margins '''
     # min_x, max_x
     minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0]), np.min(Y2[:, 0])])
     maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0]), np.max(Y2[:, 0])])
@@ -572,11 +585,6 @@ if __name__ == "__main__":
     margin_ratio = 0.1
     margin_top = margin_bottom = (maxY - minY) * margin_ratio
     margin_left = margin_right = (maxX - minX) * margin_ratio
-
-    # print(margin_left)
-    # print(margin_right)
-    # print(margin_top)
-    # print(margin_bottom)
 
     minX -= margin_left
     maxX += margin_right
@@ -593,7 +601,7 @@ if __name__ == "__main__":
         # # nx.draw_networkx_nodes(..., ax=ax)
         # ax0.set(xlim = (minX, maxX), ylim = (minY, maxY))
         # ax0.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph_(data = Y0, edges = edges0, labels = labels0, match_edges = M, 
+        drawGraph_(data = Y0, edges = edges0, labels = labels0, keep_edges = keep_edges0, 
         fig_minX = minX,
         fig_maxX = maxX,
         fig_minY = minY, 
@@ -604,7 +612,7 @@ if __name__ == "__main__":
         # # nx.draw_networkx_nodes(..., ax=ax)
         # ax1.set(xlim = (minX, maxX), ylim = (minY, maxY))
         # ax1.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph_(data = Y1, edges = edges1, labels = labels1, match_edges = M,
+        drawGraph_(data = Y1, edges = edges1, labels = labels1, keep_edges = keep_edges1,
         fig_minX = minX,
         fig_maxX = maxX,
         fig_minY = minY, 
@@ -615,7 +623,7 @@ if __name__ == "__main__":
         # # nx.draw_networkx_nodes(..., ax=ax)
         # ax2.set(xlim = (minX, maxX), ylim = (minY, maxY))
         # ax2.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph_(data = Y2, edges = edges1, labels = labels1, match_edges = M,
+        drawGraph_(data = Y2, edges = edges1, labels = labels1, keep_edges = keep_edges1,
         fig_minX = minX,
         fig_maxX = maxX,
         fig_minY = minY, 
@@ -624,15 +632,15 @@ if __name__ == "__main__":
         plt.show()
     else:
         drawScatter(Y0, labels0, 
-        keep_ids, edges0, M, 
+        keep_ids0, edges0, keep_edges0, 
         "D0", minX, maxX, minY, maxY)  
 
         drawScatter(Y1, labels1, 
-        keep_ids, edges1, M, 
+        keep_ids1, edges1, keep_edges1, 
         "D1 joint t-sne", minX, maxX, minY, maxY)
 
         drawScatter(Y2, labels1, 
-        keep_ids, edges1, M, 
+        keep_ids1, edges1, keep_edges1, 
         "D1 t-sne", minX, maxX, minY, maxY) 
 
         plt.show()

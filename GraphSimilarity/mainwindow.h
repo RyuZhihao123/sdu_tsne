@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <qdebug.h>
 #include "widget.h"
+#include <math.h>
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -36,6 +37,17 @@ private slots:
 
     void on_btnGFD_clicked();
 
+
+    void on_btnSim_clicked();
+
+    // read graph structure from fm_data generated from pytho
+    Graph read_fm_data(const QString& fileName);
+
+    // save similarities to file
+    void saveSims(const MatchList& matchList, const QString& fileName);
+
+    // compute the similarities between two graphs
+    MatchList calcSims(Graph& g1, Graph& g2);
 private:
     Ui::MainWindow *ui;
     int m_graphlet_id = 0;

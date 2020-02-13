@@ -36,6 +36,7 @@ public:
     QPushButton *btnGen;
     QPushButton *btnClear;
     QPushButton *btnGFD;
+    QPushButton *btnSim;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -76,6 +77,9 @@ public:
         btnGFD = new QPushButton(groupBox);
         btnGFD->setObjectName(QString::fromUtf8("btnGFD"));
         btnGFD->setGeometry(QRect(0, 200, 112, 32));
+        btnSim = new QPushButton(groupBox);
+        btnSim->setObjectName(QString::fromUtf8("btnSim"));
+        btnSim->setGeometry(QRect(0, 140, 112, 32));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -102,6 +106,7 @@ public:
         btnGen->setText(QCoreApplication::translate("MainWindow", "Generate", nullptr));
         btnClear->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
         btnGFD->setText(QCoreApplication::translate("MainWindow", "GFD", nullptr));
+        btnSim->setText(QCoreApplication::translate("MainWindow", "\347\233\270\344\274\274\345\272\246\350\256\241\347\256\227", nullptr));
     } // retranslateUi
 
 };

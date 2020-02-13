@@ -1,6 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-#define MAX_SEARCH_RANGE 3
+#define MAX_SEARCH_RANGE 1
 #define ALL_GRAPHLET    29
 
 #include <QVector>
@@ -27,6 +27,10 @@ struct Node    // 图
 
 typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges
 typedef QVector<GraphLetNode> GraphLet;         // graphlet representation
+typedef QVector<float> GFD;                     // graphlet frequency distribution
+
+typedef QMap<QPair<int, int>, float> MatchList;// matching point and their similarities
+//typedef QVector<MatchPoint> MatchList;
 
 // Undirected graph
 class Graph
@@ -35,7 +39,7 @@ public:
     Graph();
     QVector<Node> m_nodes;                   // 结点
     int cur_ID = 0;                          // 当前显示的graphlet编号
-    QVector<GraphLet> m_cur_graphlets;       //  当前找到的
+    QVector<GraphLet> m_cur_graphlets;       // 当前找到的
 
     int nodeNum() const;
 
@@ -49,7 +53,8 @@ public:
     Node *GetNode(int id);
     int HasNodeAt(QPoint p, float radius = 100);
 
-    void GetGraphlets(int gid);   // 计算graphlets
+    // get all graphlets from current graph. 是为了演示效果
+    void GetGraphletFromGraph(int gid);
     void ShowNextGraphlet();
 
     void clear();
@@ -57,8 +62,13 @@ public:
 
     // Search graphlet type gid starting from node sid
     QVector<GraphLet> SearchGraphLet(int gid, int sid);
-    QVector<float> calGFD(int sid);
-    QVector<float> localGFD(int sid);  // return the feature vector of given node
+
+    //  return all graphlets found on given node
+    QVector<QVector<GraphLet>> GetGraphLets(int sid);
+
+    QVector<QVector<GraphLet>> GetNeighborGraphlets(int sid);
+     // return the feature vector of given node
+    QVector<float> GetfeatureVector(int sid);
 private:
     // A family of functions for searching graphlets
     // Search graphlet from sid
@@ -90,6 +100,14 @@ private:
     QVector<GraphLet> SearchGraphLet27(int sid);
     QVector<GraphLet> SearchGraphLet28(int sid);
     QVector<GraphLet> SearchGraphLet29(int sid);
+
+    // de-duplicate graphlets of certain type
+    void DedupGraphLets(QVector<GraphLet>& allGraphlets);
+    // sort graphlet node in a graphlet
+    void SortGraphLet(GraphLet& glet);
+    // determine whether two graphlets are the same.
+    // Before calling this function, glet1 and glet2 must be sorted.
+    bool GraphletEqual(const GraphLet& glet1, const GraphLet& glet2);
 
 };
 

@@ -25,8 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::slot_openGraph()
 {
-    QString filename = QFileDialog::getOpenFileName(this,"Open Graph",".", "Graph (*.graph)");
-
+    QString filename = QFileDialog::getOpenFileName(this,"Open Graph","/Users/joe/Codes/QtProjects/t-sne for comparison/GraphSimilarity/data/", "Graph (*.graph)");
     if(filename == "")
     {
         return;
@@ -137,7 +136,7 @@ void MainWindow::slot_saveGraph()
 
 void MainWindow::slot_calculateGraphLet()  // 点击计算按钮
 {
-    m_widget->m_graph.GetGraphlets(m_graphlet_id);
+    m_widget->m_graph.GetGraphletFromGraph(m_graphlet_id);
 }
 
 void MainWindow::slot_btnNext()
@@ -202,10 +201,143 @@ void MainWindow::on_btnGFD_clicked()
     // For test
     int sid = 0;
 
-    QVector<float> v =m_widget->m_graph.localGFD(sid);
+    QVector<float> v =m_widget->m_graph.GetfeatureVector(sid);
     qDebug() << "Feature vector:";
     for (int i = 0; i < v.size(); i++)
     {
         qDebug() << v[i] << " ";
     }
+}
+
+Graph MainWindow::read_fm_data(const QString& fileName)
+{
+    Graph g;
+
+    QFile file(fileName);
+//    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+//    {
+//        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
+//        return;
+//    }
+    file.open(QIODevice::ReadOnly);
+
+    QTextStream ts(&file);
+    // process TRUNCK
+    while(!ts.atEnd())
+    {
+        QStringList line= ts.readLine().split(QRegExp("\\s+"));
+        line.removeAll("");
+
+        if( line.size() == 0)
+            continue;
+
+        if(line[0][0] == "G")  // 接下来要读取Graph Adjacency List;
+            break;
+
+        g.addNode(Node());
+    }
+
+    qDebug()<<"加载完毕, 顶点数"<<g.nodeNum();
+
+    // add edges
+    while(!ts.atEnd())
+    {
+        QStringList line= ts.readLine().split(QRegExp("\\s+"));
+        line.removeAll("");
+
+        if( line.size() == 0)
+            continue;
+
+        int id = line[0].toInt();
+        for(int i=1; i<line.size(); i+=2)
+        {
+            g.addEdge(id, line[i].toInt());
+        }
+    }
+
+    return g;
+}
+
+void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
+{
+    QFile file(fileName);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
+        return;
+    }
+    else
+    {
+        QTextStream textStream(&file);
+        for (auto iter = matchList.begin(); iter != matchList.end(); iter++)
+        {
+            qDebug() << "save: " << iter.key().first << ", " << iter.key().second << ", " << iter.value();
+            textStream << QString::number(iter.key().first);
+            textStream << "\t";
+            textStream << QString::number(iter.key().second);
+            textStream << "\t";
+            textStream << iter.value();
+            textStream << "\n";
+        }
+        file.close();
+    }
+}
+
+void MainWindow::on_btnSim_clicked()
+{
+    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
+    assert(filenames.size() == 2);
+
+    Graph g0 = read_fm_data(filenames[0]);
+    Graph g1 = read_fm_data(filenames[1]);
+
+    MatchList matchList = calcSims(g0, g1);
+
+    saveSims(matchList,
+             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%2.txt").arg(QFileInfo(filenames[0]).baseName(), QFileInfo(filenames[1]).baseName()));
+}
+
+MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
+{
+    MatchList matchList;
+
+    for (int i = 0; i < g1.nodeNum(); i++)
+    {
+        QVector<float> vi = g1.GetfeatureVector(i);
+
+        QPair<int, int> maxP;
+        float maxS = -INFINITY;
+
+        for (int j = 0; j < g2.nodeNum(); j++)
+        {
+            QVector<float> vj = g2.GetfeatureVector(j);
+
+
+            float sum = 0.f;
+            float len1 = 0.f, len2 = 0.f;
+            for(int k = 0; k < vi.size(); k++)
+            {
+                // dot product bewteen v1 and v2
+                sum += vi[k]*vj[k];
+                // dot product bewteen v1 and v1
+                len1 += vi[k]*vi[k];
+                // dot product bewteen v2 and v2
+                len2 += vj[k]*vj[k];
+            }
+            len1 = sqrtf(len1);
+            len2 = sqrtf(len2);
+
+            float s = sum / (len1 * len2);
+            if (s > maxS)
+            {
+                maxS = s;
+                maxP.first = i;
+                maxP.second = j;
+            }
+        }
+
+        matchList[maxP] = maxS;
+    }
+
+    return matchList;
 }
