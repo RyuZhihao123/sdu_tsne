@@ -48,8 +48,12 @@ private slots:
 
     // compute the similarities between two graphs
     MatchList calcSims(Graph& g1, Graph& g2);
+    void on_btnLoadFmData_clicked();
+
 private:
     Ui::MainWindow *ui;
     int m_graphlet_id = 0;
+
+    QStringList m_filenames;
 };
 #endif // MAINWINDOW_H

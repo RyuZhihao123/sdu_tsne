@@ -37,6 +37,8 @@ public:
     QPushButton *btnClear;
     QPushButton *btnGFD;
     QPushButton *btnSim;
+    QPushButton *btnLoadFmData;
+    QComboBox *fileListBox;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -58,16 +60,16 @@ public:
         btnSave->setGeometry(QRect(0, 50, 112, 32));
         comboBox = new QComboBox(groupBox);
         comboBox->setObjectName(QString::fromUtf8("comboBox"));
-        comboBox->setGeometry(QRect(0, 260, 111, 32));
+        comboBox->setGeometry(QRect(0, 290, 111, 32));
         btnNext = new QPushButton(groupBox);
         btnNext->setObjectName(QString::fromUtf8("btnNext"));
-        btnNext->setGeometry(QRect(0, 320, 112, 32));
+        btnNext->setGeometry(QRect(0, 350, 112, 32));
         btnCalculate = new QPushButton(groupBox);
         btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
-        btnCalculate->setGeometry(QRect(0, 290, 112, 32));
+        btnCalculate->setGeometry(QRect(0, 320, 112, 32));
         graphletId = new QLabel(groupBox);
         graphletId->setObjectName(QString::fromUtf8("graphletId"));
-        graphletId->setGeometry(QRect(10, 350, 101, 20));
+        graphletId->setGeometry(QRect(10, 380, 101, 20));
         btnGen = new QPushButton(groupBox);
         btnGen->setObjectName(QString::fromUtf8("btnGen"));
         btnGen->setGeometry(QRect(0, 80, 112, 32));
@@ -76,10 +78,16 @@ public:
         btnClear->setGeometry(QRect(0, 110, 112, 32));
         btnGFD = new QPushButton(groupBox);
         btnGFD->setObjectName(QString::fromUtf8("btnGFD"));
-        btnGFD->setGeometry(QRect(0, 200, 112, 32));
+        btnGFD->setGeometry(QRect(0, 260, 112, 32));
         btnSim = new QPushButton(groupBox);
         btnSim->setObjectName(QString::fromUtf8("btnSim"));
-        btnSim->setGeometry(QRect(0, 140, 112, 32));
+        btnSim->setGeometry(QRect(0, 210, 112, 32));
+        btnLoadFmData = new QPushButton(groupBox);
+        btnLoadFmData->setObjectName(QString::fromUtf8("btnLoadFmData"));
+        btnLoadFmData->setGeometry(QRect(0, 180, 112, 32));
+        fileListBox = new QComboBox(centralwidget);
+        fileListBox->setObjectName(QString::fromUtf8("fileListBox"));
+        fileListBox->setGeometry(QRect(400, 480, 311, 32));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -107,6 +115,7 @@ public:
         btnClear->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
         btnGFD->setText(QCoreApplication::translate("MainWindow", "GFD", nullptr));
         btnSim->setText(QCoreApplication::translate("MainWindow", "\347\233\270\344\274\274\345\272\246\350\256\241\347\256\227", nullptr));
+        btnLoadFmData->setText(QCoreApplication::translate("MainWindow", "\350\275\275\345\205\245fm\346\225\260\346\215\256", nullptr));
     } // retranslateUi
 
 };

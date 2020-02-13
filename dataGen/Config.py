@@ -2,7 +2,7 @@ import os
 import shutil
 
 class Configuration:
-    pts_size = 500  # 图中总共点的数量
+    pts_size = 1000  # 图中总共点的数量
     # keep_ratio = 0.9
     dir_graph = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/{}/".format(pts_size)             # 点集的文件夹
     dir_similarity = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/similarities/{}/".format(pts_size)  # 相似性文件夹（哪一些点和边是相似的）

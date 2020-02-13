@@ -297,7 +297,7 @@ def joint_tsne(Y_0=np.array([]),
 
     (n1, d1) = X_1.shape
 
-    max_iter = 2000
+    max_iter = 1500 #2000
     initial_momentum = 0.5
     final_momentum = 0.8
     # momentum
@@ -514,8 +514,10 @@ def drawScatter(data, labels,
     # plt.ylim(fig_minY, fig_maxY)
     plt.scatter(data[:, 0], data[:, 1], s = 72, c = labels0)#
     plt.title(fig_title)
+
     # 高亮不相似点
-    plt.plot(dissimilar_data[:, 0], dissimilar_data[:, 1], 'ro')
+    if dissimilar_data.shape[0] != 0:
+        plt.plot(dissimilar_data[:, 0], dissimilar_data[:, 1], 'ro')
     # # 高亮不相似边
     # for e in dissimilar_edges:
     #     plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'r')
@@ -533,7 +535,7 @@ def drawScatter(data, labels,
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
-    data_folder = 50
+    data_folder = 500
     data_id_0 = 0
     data_id_1 = 1
 

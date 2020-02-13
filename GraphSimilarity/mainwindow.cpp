@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnNext,SIGNAL(clicked(bool)),this,SLOT(slot_btnNext()));
 
     m_widget = new Widget(ui->centralwidget);
+
+    m_filenames.clear();
 }
 
 void MainWindow::slot_openGraph()
@@ -285,16 +287,22 @@ void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
 
 void MainWindow::on_btnSim_clicked()
 {
-    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
-    assert(filenames.size() == 2);
-
-    Graph g0 = read_fm_data(filenames[0]);
-    Graph g1 = read_fm_data(filenames[1]);
+//    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
+//    assert(filenames.size() == 2);
+    // Pick the last two files
+    Graph g0 = read_fm_data(m_filenames[m_filenames.size()-2]);
+    Graph g1 = read_fm_data(m_filenames[m_filenames.size()-1]);
 
     MatchList matchList = calcSims(g0, g1);
 
+    QString baseName0 = QFileInfo(m_filenames[m_filenames.size()-2]).baseName();
+    QString baseName1 = QFileInfo(m_filenames[m_filenames.size()-1]).baseName();
+
+    int d0 = (baseName0.split("_")[1]).toInt();
+    int d1 = (baseName1.split("_")[1]).toInt();
+
     saveSims(matchList,
-             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%2.txt").arg(QFileInfo(filenames[0]).baseName(), QFileInfo(filenames[1]).baseName()));
+             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%2.txt").arg(d0, d1));
 }
 
 MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
@@ -306,7 +314,9 @@ MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
         QVector<float> vi = g1.GetfeatureVector(i);
 
         QPair<int, int> maxP;
+        QPair<int, int> minP;
         float maxS = -INFINITY;
+        float minS = +INFINITY;
 
         for (int j = 0; j < g2.nodeNum(); j++)
         {
@@ -334,10 +344,25 @@ MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
                 maxP.first = i;
                 maxP.second = j;
             }
+            if (s < minS)
+            {
+                minS = s;
+                minP.first = i;
+                minP.second = j;
+            }
         }
 
         matchList[maxP] = maxS;
+//        matchList[minP] = minS;
     }
 
     return matchList;
+}
+
+void MainWindow::on_btnLoadFmData_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
+    m_filenames.push_back(fileName);
+
+    ui->fileListBox->addItem(fileName);
 }

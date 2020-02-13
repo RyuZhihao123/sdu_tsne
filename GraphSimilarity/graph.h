@@ -1,6 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-#define MAX_SEARCH_RANGE 1
+#define MAX_SEARCH_RANGE 1  //1
 #define ALL_GRAPHLET    29
 
 #include <QVector>

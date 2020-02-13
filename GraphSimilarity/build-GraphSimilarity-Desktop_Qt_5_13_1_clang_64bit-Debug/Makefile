@@ -218,6 +218,7 @@ DIST          = /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_pre.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf \
+		../.qmake.stash \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf \
@@ -428,6 +429,7 @@ Makefile: ../GraphSimilarity.pro /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clan
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf \
 		/Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf \
@@ -615,6 +617,7 @@ Makefile: ../GraphSimilarity.pro /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clan
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/qt_config.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/macx-clang/qmake.conf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/exclusive_builds.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/mac/sdk.prf:
 /Users/joe/Qt/5.13.1/clang_64/mkspecs/features/toolchain.prf:
@@ -688,6 +691,7 @@ clean: compiler_clean
 
 distclean: clean 
 	-$(DEL_FILE) -r GraphSimilarity.app
+	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) Makefile
 
 

@@ -100,6 +100,7 @@ void Graph::ShowNextGraphlet()
 void Graph::clear()
 {
     m_nodes.clear();
+    m_cur_graphlets.clear();
 }
 
 
@@ -250,8 +251,7 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
         int clevel = t.first;
         int cnode = t.second;
 
-
-        qDebug() << "visit:" << cnode;
+//        qDebug() << "visit:" << cnode;
 
         if (clevel != llevel)
         {
@@ -265,7 +265,7 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
             llevel = clevel;
             if (clevel >= MAX_SEARCH_RANGE)
             {
-                qDebug() << "max level reached.";
+//                qDebug() << "max level reached.";
                 break;
             }
         }
@@ -307,6 +307,7 @@ QVector<float> Graph::GetfeatureVector(int sid)
     // De-duplicate each graphlet type
     for (int i = 0; i < neighborGlets.size(); i++)
     {
+        qDebug() << "removing neighborhood:" << i/ALL_GRAPHLET << " graphlet type:" << i%ALL_GRAPHLET;
         DedupGraphLets(neighborGlets[i]);
     }
     //
@@ -318,14 +319,14 @@ QVector<float> Graph::GetfeatureVector(int sid)
 
         GFD gfd(ALL_GRAPHLET);
         int count = 0;
-        for (int j = 0; j < ALL_GRAPHLET; j++)
+        for (int j = 0; j < gfd.size(); j++)
         {
             gfd[j] = neighborGlets[i*ALL_GRAPHLET + j].size();
             count += neighborGlets[i*ALL_GRAPHLET + j].size();
         }
         for (int j = 0; j < gfd.size(); j++)
         {
-            gfd[j] /= count;
+            gfd[j] /= (float)count;
         }
         // concat
         std::copy(gfd.begin(), gfd.end(), featureVector.begin() + i*ALL_GRAPHLET);
@@ -2389,14 +2390,20 @@ void Graph::DedupGraphLets(QVector<GraphLet> &allGraphlets)
             }
         }
 
-        // two graphlets are the same
-        return true;
+        // two graphlets are the same, no matter what
+        return false;
     });
 
     // find consecutive duplicated elements
     int n = std::unique(allGraphlets.begin(), allGraphlets.end()) - allGraphlets.begin();
     // remove last
     int total = allGraphlets.size();
+
+    if (total - n != 0)
+    {
+        qDebug() << "remove duplicate: " << total - n;
+    }
+
     for (int i = n; i < total; i++)
     {
         allGraphlets.pop_back();
