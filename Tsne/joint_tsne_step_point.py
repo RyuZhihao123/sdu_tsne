@@ -503,7 +503,7 @@ def drawScatter(data, labels,
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
-    data_folder = 500
+    data_folder = 75
     data_id_0 = 0
     data_id_1 = 1
 
@@ -519,7 +519,7 @@ if __name__ == "__main__":
 
     match_edges = read_match_edges(esm)    
     match_points = read_match_points(psm)
-    # match_points = read_match_points("../data/qt_sim/similar_points_fm_0_fm_1.txt") # read from c++
+    # match_points = read_match_points("../data/qt_sim/similar_points_0_%2.txt") # read from c++
 
     ''' first we apply t-sne to D0 '''
     Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = 3, perplexity = 20.0)

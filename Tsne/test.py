@@ -38,7 +38,9 @@ import networkx as nx
 # print(arr1*arr2)# bit mul
 # print(np.dot(arr1, arr2))# dot product
 
-d0 = [1, -1]
-d1 = [-1, 1]
-
-print(np.sum(np.square(np.subtract(d0, d1))))
+a = {}
+a[0] = 1
+a[1] = 2
+a[3] = 4
+print(len(a))
+# print(np.sum(np.square(np.subtract(d0, d1))))

@@ -20,7 +20,8 @@ import networkx as nx
 
 
 
-beta_ = 0.000001 # 0.00001 0.00002
+beta_ = 0.01
+gamma_ = 0.05
 
 def read_fm_data(filepath):
     pts = []
@@ -274,6 +275,7 @@ def tsne(X=np.array([]), Y_I = np.array([]), no_dims=2, initial_dims=50, perplex
 def joint_tsne(Y_0=np.array([]), 
                 X_1=np.array([]),
                 Y_1_I = np.array([]), 
+                match_points = {},
                 match_edges = {},
                no_dims=2,
                initial_dims_1=50,
@@ -297,7 +299,7 @@ def joint_tsne(Y_0=np.array([]),
 
     (n1, d1) = X_1.shape
 
-    max_iter = 2000 #2000
+    max_iter = 1000
     initial_momentum = 0.5
     final_momentum = 0.8
     # momentum
@@ -317,7 +319,6 @@ def joint_tsne(Y_0=np.array([]),
     P1 = P1 / np.sum(P1)
     # early exaggeration
     # _beta_ = beta_ * 2.
-    _beta_ = beta_
     P1 = P1 * 4.
     P1 = np.maximum(P1, 1e-12)
 
@@ -337,11 +338,14 @@ def joint_tsne(Y_0=np.array([]),
         PQ1 = P1 - Q1
 
         for i in range(n1):
-            dY1[i, :] = np.sum(np.tile(PQ1[:, i] * num1[:, i], (no_dims, 1)).T * (Y1[i, :] - Y1), 0) 
-                # dY1[i, :] = 0
+            dY1[i, :] = np.sum(np.tile(PQ1[:, i] * num1[:, i], (no_dims, 1)).T * (Y1[i, :] - Y1), 0)  
                 # + penalty gradient
+            for (vi, vj) in match_points:
+                if i == vj:
+                    # print(vi, vj)
+                    dY1[i, :] -= (beta_*match_points[(vi, vj)]*(Y_0[vi, :]-Y1[vj, :]) /len(match_points))
+
             for m in match_edges:
-                 # get matching edge
                 eij = m[0]
                 ekl = m[1]
 
@@ -355,10 +359,10 @@ def joint_tsne(Y_0=np.array([]),
                     d0 = np.subtract(Y_0[vi, :], Y_0[vj, :])
                     d1 = np.subtract(Y1[i, :], Y1[vl, :])
                     # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1))
-                    # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1)/len(match_edges))
-                    dY1[i, :] -= 2*_beta_*match_edges[m]*(d0-d1)          
+                    dY1[i, :] -= (gamma_*match_edges[m]*(d0-d1)/len(match_edges))
+                    # dY1[i, :] -= 2*_beta_*match_edges[m]*(d0-d1)          
 
-
+      
         # Perform the update
         if iter < 20:
             momentum = initial_momentum
@@ -385,8 +389,15 @@ def joint_tsne(Y_0=np.array([]),
         '''
         if (iter + 1) % 10 == 0:
             C0 = np.sum(P1 * np.log(P1 / Q1))
-            C1= 0
-            # + penalty term
+            C1 = 0
+            # + point term
+            for (vi, vj) in match_points:                
+                # C1 += _beta_ * S[m] * np.sum(np.square(np.subtract(d0, d1)))
+                C1 += (match_points[(vi, vj)] * np.sum(np.square(np.subtract(Y_0[vi, :], Y1[vj, :])))/len(match_points))     # output error without weignt
+
+
+            # + edge term
+            C2 = 0
             for m in match_edges:
                 # get matching edge
                 eij = m[0]
@@ -401,12 +412,11 @@ def joint_tsne(Y_0=np.array([]),
                 d0 = np.subtract(Y_0[i, :], Y_0[j, :])
                 d1 = np.subtract(Y1[k, :], Y1[l, :])
 
-                # C1 += (similarities[m] * np.sum(np.square(np.subtract(d0, d1)))/len(match_edges))  # output error without weignt
-                C1 += (match_edges[m] * np.sum(np.square(np.subtract(d0, d1))))
-                # print(np.sum(np.square(np.subtract(d0, d1))))
+                C2 += (match_edges[m] * np.sum(np.square(np.subtract(d0, d1)))/len(match_edges))  # output error without weignt
+                # C2 += (match_edges[m] * np.sum(np.square(np.subtract(d0, d1))))
                 
-            C = C0 + _beta_ * C1
-            print("Iteration %d: KL error is %f, similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
+            C = C0 + beta_ * C1 + gamma_ * C2
+            print("Iteration %d: KL error is %f, point similarity is %f, edge similarity is %f, total error is %f" % (iter + 1, C0, C1, C2, C))
 
         # Stop lying about P-values
         if iter == 100:
@@ -417,47 +427,6 @@ def joint_tsne(Y_0=np.array([]),
     # Return solution
     return Y1
 
-
-# def drawGraph(Y, E, labels, match_edges, ax):
-#     G = nx.DiGraph()
-#     G.add_edges_from(E)
-#     Y_ = Y.tolist()
-#     pos = {}
-#     for l in range(len(Y_)):
-#         y = Y_[l]
-#         pos[l] = (y[0], y[1])
-
-#     # filter by label
-#     labelSet = []
-#     for l in labels:
-#         if l not in labelSet:
-#             labelSet.append(l)
-
-#     fpos = {}
-#     for l in labelSet:
-#         # filter data points for each label
-#         fpos[l] = {i: pos[i] for i in range(len(labels)) if labels[i] == l}
-
-#     # for each label use different colors
-#     cmap = ['r', 'b', 'y', 'g'] #...
-#     for l in fpos:
-#         # print(fpos[l].keys())
-#         # print(fpos[l].values())
-#         nx.draw_networkx_nodes(G, pos = fpos[l], nodelist = fpos[l].keys(), node_color= cmap[l], ax = ax)
-#     nx.draw_networkx_labels(G, pos, font_color='w')
-
-#     # similar edges with black
-#     # similar edges with red
-#     red_edges = []
-#     black_edges = []
-#     for e in E:
-#         if e in match_edges:
-#             black_edges.append(e)
-#         else:
-#             red_edges.append(e)
-
-#     nx.draw_networkx_edges(G, pos, edgelist=black_edges, edge_color='k', arrows=True)
-#     nx.draw_networkx_edges(G, pos, edgelist=red_edges, edge_color='r', arrows=True)
     
 def drawGraph_(data, edges, labels, keep_edges, 
             fig_minX, fig_maxX, fig_minY, fig_maxY):
@@ -522,10 +491,6 @@ def drawScatter(data, labels,
     # for e in dissimilar_edges:
     #     plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'r')
 
-    # # 显示相似边
-    # for e in keep_edges:
-    #     plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'k')
-
     #     plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
     #     plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
     # 标号不相似点
@@ -544,21 +509,25 @@ if __name__ == "__main__":
     hdd1 = "../data/highdims/{}/fm_{}.txt".format(data_folder, data_id_1) 
     esm = "../data/similarities/{}/similar_edges_{}_{}.txt".format(data_folder, data_id_0, data_id_1) 
     psm = "../data/similarities/{}/similar_points_{}_{}.txt".format(data_folder, data_id_0, data_id_1) 
+    
 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
-    
+
     match_edges = read_match_edges(esm)    
     match_points = read_match_points(psm)
+    # match_points = read_match_points("../data/qt_sim/similar_points_fm_0_fm_1.txt") # read from c++
 
     ''' first we apply t-sne to D0 '''
     Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' then we apply joint-tsne to D1 '''
-    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
+    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = match_points, match_edges=match_edges, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' tsne to D1 comparison '''
     Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
 
+    for m in match_points:
+        print(m)
 
     for m in match_edges:
         print(m)
@@ -574,7 +543,6 @@ if __name__ == "__main__":
     for pair in match_edges:
         keep_edges0.append(pair[0])
         keep_edges1.append(pair[1])
-
 
     ''' compute the margins '''
     # min_x, max_x
