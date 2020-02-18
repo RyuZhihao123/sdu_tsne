@@ -15,6 +15,40 @@
 import numpy as np
 import pylab
 
+def read_ply(filepath):
+    points = []
+    with open(filepath, "r", encoding="utf-8") as f:
+        vertex_count = 0
+
+        line = f.readline()
+        while line:
+            line = line.strip()
+            items = line.split()
+
+            if items[0] == "element":
+                if items[1] == "vertex":
+                    vertex_count = int(items[2])
+
+            if line == "end_header":
+                break
+            line = f.readline()
+        
+        print("vertex number: " + str(vertex_count))
+
+        # begin read coordinates of points
+        line = f.readline()
+        i = 0
+        while i < vertex_count:
+            line = line.strip()
+            items = line.split()
+
+            # only read first 3 items .i. e. position
+            points.append([float(items[0]), float(items[1]), float(items[2])])
+            line = f.readline()
+            i += 1
+
+    labels = [0 for i in range(vertex_count)]
+    return np.array(points), labels
 
 def Hbeta(D=np.array([]), beta=1.0):
     """
@@ -127,14 +161,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     final_momentum = 0.8
     eta = 500
     min_gain = 0.01
-    # Y = np.random.randn(n, no_dims)
-    Y = np.array([[ 1.52340745, 1.37944798],
-    [ 1.04632537 , 1.94709421],
-    [-1.09114757 , -0.47318732],
-    [-1.17815386 , -2.53435897],
-    [ 0.52436536 , 1.19015593],
-    [-0.65184383 , 0.65576772],
-    [ 0.162397  , -1.43788719]])
+    Y = np.random.randn(n, no_dims)
 
     dY = np.zeros((n, no_dims))
     iY = np.zeros((n, no_dims))
@@ -191,8 +218,11 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
 if __name__ == "__main__":
     print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
     print("Running example on 2,500 MNIST digits...")
-    X = np.loadtxt("./data/test4.txt")
-    labels = np.loadtxt("./data/test_labels_3_4.txt")
-    Y = tsne(X, 2, 50, 20.0)
+    X = np.loadtxt("../data/meshlab/off/bunny/reconstruction/bun_zipper_res4_2.xyz")
+    labels = [0 for i in range(X.shape[0])] 
+    # labels = np.loadtxt("./data/test_labels_3_4.txt")
+    # X, labels = read_ply("../data/meshlab/off/bunny/reconstruction/bun_zipper_res4.ply")
+
+    Y = tsne(X, 2, 3, 90.0)
     pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
     pylab.show()

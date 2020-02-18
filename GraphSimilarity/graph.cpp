@@ -28,7 +28,7 @@ void Graph::addEdge(int a, int b)
     assert(b >= 0 && b<m_nodes.size());
 
     m_nodes[a].addEdge(b);
-    m_nodes[b].addEdge(a);
+//    m_nodes[b].addEdge(a);
 }
 
 void Graph:: renderGraph(QPainter *painter)
@@ -117,6 +117,9 @@ void Graph::GetGraphletFromGraph(int gid)
     {
         m_cur_graphlets.append(SearchGraphLet(gid, i));
     }
+    // de-duplicate graphlets
+    DedupGraphLets(m_cur_graphlets);
+
     qDebug() << "Compute graphlets: " << gid << " cost " << time.elapsed() << "ms";
 }
 
@@ -157,6 +160,9 @@ QVector<GraphLet> Graph::SearchGraphLet(int gid, int sid)
         break;
     case 10:
         glets = SearchGraphLet11(sid);
+        break;
+    case 11:
+        glets = SearchGraphLet12(sid);
         break;
     case 12:
         //        qDebug() << "SearchGraphLet13";
@@ -299,6 +305,67 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
     return neighborGlets;
 }
 
+QVector<QVector<GraphLet> > Graph::GetNeighborGraphletsAll(int sid)
+{
+    typedef QPair<int, int> tuple;  // first is level, second is node
+
+
+    QVector<bool> visited(m_nodes.size(), false);// ensure each node is visited once
+    visited[sid] = true;
+
+    QQueue<tuple> q;
+    q.enqueue(tuple(0, sid));
+
+    int llevel = 0;
+    QVector<QVector<GraphLet>> allGlets(ALL_GRAPHLET);
+    // BFS, limited in neighbor size of MAX_SEARCH_RANGE
+    while(!q.isEmpty())
+    {
+        // top
+        tuple t = q.head();
+        int clevel = t.first;
+        int cnode = t.second;
+
+
+        if (clevel != llevel)
+        {
+            llevel = clevel;
+            if (clevel >= MAX_SEARCH_RANGE)
+            {
+//                qDebug() << "max level reached.";
+                break;
+            }
+        }
+
+
+        // accumulate graphlets found in this node
+        QVector<QVector<GraphLet>> glets = GetGraphLets(cnode);
+        for (int i = 0; i < glets.size(); i++)
+        {
+            for (int j = 0; j < glets[i].size(); j++)
+            {
+                allGlets[i].push_back(glets[i][j]);
+            }
+        }
+
+        // pop
+        q.dequeue();
+
+        // push
+        Node* n = GetNode(cnode);
+        for (int i = 0; i< n->childs.size(); i++)
+        {
+            if (!visited[n->childs[i]])
+            {
+                visited[n->childs[i]] = true;
+                q.enqueue(tuple(clevel+1, n->childs[i]));
+            }
+        }
+    }
+
+    return allGlets;
+}
+
 QVector<float> Graph::GetfeatureVector(int sid)
 {
     QVector<QVector<GraphLet> > neighborGlets = GetNeighborGraphlets(sid);
@@ -332,6 +399,33 @@ QVector<float> Graph::GetfeatureVector(int sid)
         std::copy(gfd.begin(), gfd.end(), featureVector.begin() + i*ALL_GRAPHLET);
     }
     return featureVector;
+}
+
+QVector<float> Graph::GetfeatureVectorAll(int sid)
+{
+    QVector<QVector<GraphLet> > neighborGlets = GetNeighborGraphletsAll(sid);
+    assert(neighborGlets.size() == ALL_GRAPHLET);
+
+    // De-duplicate each graphlet type
+    for (int i = 0; i < neighborGlets.size(); i++)
+    {
+//        qDebug() << "removing graphlet type:" << i;
+        DedupGraphLets(neighborGlets[i]);
+    }
+    //
+
+    GFD gfd(ALL_GRAPHLET);
+    int count = 0;
+    for (int i = 0; i < gfd.size(); i++)
+    {
+        gfd[i] = neighborGlets[i].size();
+        count += neighborGlets[i].size();
+    }
+    for (int i = 0; i < gfd.size(); i++)
+    {
+        gfd[i] /= (float)count;
+    }
+    return gfd;
 }
 
 QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个点为起点找graphlet
@@ -927,6 +1021,76 @@ QVector<GraphLet> Graph::SearchGraphLet11(int sid)
         }
     }
 
+    return glets;
+}
+
+QVector<GraphLet> Graph::SearchGraphLet12(int sid)
+{
+    // g12: n0->n1, n1->n2, n2->n3, n3->n4
+    // n1->n3
+    QVector<GraphLet> glets;
+
+    int n0 = sid;
+    Node* t0 = GetNode(n0);
+
+    for(int i = 0; i<t0->childs.size(); ++i)
+    {
+        int n1 = t0->childs[i];
+        Node* t1 = GetNode(n1);
+
+        for(int j=0; j<t1->childs.size(); ++j)
+        {
+            int n2 = t1->childs[j];
+            if(n2 == n0)
+                continue;
+
+            Node* t2 = GetNode(n2);
+            for(int k=0; k<t2->childs.size(); ++k)
+            {
+                int n3 = t2->childs[k];
+                if (n3 == n1 || n3 == n0)
+                    continue;
+
+                Node* t3 = GetNode(n3);
+                for (int l = 0; l<t3->childs.size(); ++l)
+                {
+                    int n4 = t3->childs[l];
+                    if (n4 == n2 || n4 == n1 || n4 == n0)
+                        continue;
+
+                    for (int m = 0; m < t1->childs.size(); m++)
+                    {
+                        int n5 = t1->childs[m];
+                        if (n5 == n3)
+                        {
+                            GraphLet tmp;
+                            GraphLetNode m0, m1, m2, m3, m4;
+                            m0.first = n0;
+                            m1.first = n1;
+                            m2.first = n2;
+                            m3.first = n3;
+                            m4.first = n4;
+
+                            m0.second.append(n1);
+                            m1.second.append(n2);
+                            m1.second.append(n3);
+                            m2.second.append(n3);
+                            m3.second.append(n4);
+
+                            tmp.append(m0);
+                            tmp.append(m1);
+                            tmp.append(m2);
+                            tmp.append(m3);
+                            tmp.append(m4);
+
+                            glets.append(tmp);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
     return glets;
 }
 
@@ -2396,6 +2560,9 @@ void Graph::DedupGraphLets(QVector<GraphLet> &allGraphlets)
 
     // find consecutive duplicated elements
     int n = std::unique(allGraphlets.begin(), allGraphlets.end()) - allGraphlets.begin();
+//    int n = std::unique(allGraphlets.begin(), allGraphlets.end(), [](){
+
+//    }) - allGraphlets.begin();
     // remove last
     int total = allGraphlets.size();
 

@@ -270,9 +270,14 @@ void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
     }
     else
     {
+        int count = 0;
         QTextStream textStream(&file);
         for (auto iter = matchList.begin(); iter != matchList.end(); iter++)
         {
+            if (iter.key().first != iter.key().second)
+            {
+                count ++;
+            }
             qDebug() << "save: " << iter.key().first << ", " << iter.key().second << ", " << iter.value();
             textStream << QString::number(iter.key().first);
             textStream << "\t";
@@ -281,6 +286,7 @@ void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
             textStream << iter.value();
             textStream << "\n";
         }
+        qDebug() << "number of mismatch points: " << count;
         file.close();
     }
 }
@@ -311,17 +317,12 @@ MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
 
     for (int i = 0; i < g1.nodeNum(); i++)
     {
-        QVector<float> vi = g1.GetfeatureVector(i);
+//        QVector<float> vi = g1.GetfeatureVector(i);
+        QVector<float> vi = g1.GetfeatureVectorAll(i);
 
-        QPair<int, int> maxP;
-        QPair<int, int> minP;
-        float maxS = -INFINITY;
-        float minS = +INFINITY;
 
-        for (int j = 0; j < g2.nodeNum(); j++)
-        {
-            QVector<float> vj = g2.GetfeatureVector(j);
-
+//            QVector<float> vj = g2.GetfeatureVector(j);
+            QVector<float> vj = g2.GetfeatureVectorAll(j);
 
             float sum = 0.f;
             float len1 = 0.f, len2 = 0.f;
@@ -338,21 +339,9 @@ MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
             len2 = sqrtf(len2);
 
             float s = sum / (len1 * len2);
-            if (s > maxS)
-            {
-                maxS = s;
-                maxP.first = i;
-                maxP.second = j;
-            }
-            if (s < minS)
-            {
-                minS = s;
-                minP.first = i;
-                minP.second = j;
-            }
-        }
 
-        matchList[maxP] = maxS;
+
+        matchList[QPair<int, int>(i, i)] = s;
 //        matchList[minP] = minS;
     }
 

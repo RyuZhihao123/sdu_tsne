@@ -1,6 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-#define MAX_SEARCH_RANGE 1  //1
+#define MAX_SEARCH_RANGE 1  //1 is the best?
 #define ALL_GRAPHLET    29
 
 #include <QVector>
@@ -25,7 +25,7 @@ struct Node    // 图
     }
 };
 
-typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges
+typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges, which is an undirected graph
 typedef QVector<GraphLetNode> GraphLet;         // graphlet representation
 typedef QVector<float> GFD;                     // graphlet frequency distribution
 
@@ -44,7 +44,7 @@ public:
     int nodeNum() const;
 
     void addNode(const Node& n);
-    void addEdge(int a, int b);
+    void addEdge(int a, int b);             // now directed graph
 
     void renderGraph(QPainter* painter);
     void renderCurGraphLets(QPainter* painter);
@@ -67,8 +67,11 @@ public:
     QVector<QVector<GraphLet>> GetGraphLets(int sid);
 
     QVector<QVector<GraphLet>> GetNeighborGraphlets(int sid);
+    QVector<QVector<GraphLet>> GetNeighborGraphletsAll(int sid);
+
      // return the feature vector of given node
     QVector<float> GetfeatureVector(int sid);
+    QVector<float> GetfeatureVectorAll(int sid);
 private:
     // A family of functions for searching graphlets
     // Search graphlet from sid
@@ -83,6 +86,7 @@ private:
     QVector<GraphLet> SearchGraphLet9(int sid);
     QVector<GraphLet> SearchGraphLet10(int sid);
     QVector<GraphLet> SearchGraphLet11(int sid);
+    QVector<GraphLet> SearchGraphLet12(int sid);
     QVector<GraphLet> SearchGraphLet13(int sid);
     QVector<GraphLet> SearchGraphLet14(int sid);
     QVector<GraphLet> SearchGraphLet15(int sid);

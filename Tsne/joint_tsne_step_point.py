@@ -20,7 +20,7 @@ import networkx as nx
 
 
 
-beta_ = 0.01 # 0.00001 0.00002
+beta_ = 0.01 # 0.01
 
 def read_fm_data(filepath):
     pts = []
@@ -90,6 +90,18 @@ def read_match_points(filepath):
             match_points[(int(items[0]), int(items[1]))] = float(items[2])
 
     return match_points
+
+
+def select_anchor_point(match_points, rate = 0.15):
+    sim_scores = list(match_points.values())
+    rank = np.argsort(sim_scores)[::-1]
+    # print(int(len(rank)))
+
+    points = list(match_points.keys())
+    anchor_point = {points[i]:sim_scores[i] for i in range(int(rate*len(rank)))}
+
+    return anchor_point
+
 
 def Hbeta(D=np.array([]), beta=1.0):
     """
@@ -297,7 +309,7 @@ def joint_tsne(Y_0=np.array([]),
 
     (n1, d1) = X_1.shape
 
-    max_iter = 1000
+    max_iter = 2000
     initial_momentum = 0.5
     final_momentum = 0.8
     # momentum
@@ -484,34 +496,45 @@ def drawScatter(data, labels,
     plt.figure()
     # plt.xlim(fig_minX, fig_maxX)
     # plt.ylim(fig_minY, fig_maxY)
-    plt.scatter(data[:, 0], data[:, 1], s = 72, c = labels0)#
+    plt.scatter(data[:, 0], data[:, 1], s = 72, c = labels)#
     plt.title(fig_title)
 
-    # 高亮不相似点
-    if dissimilar_data.shape[0] != 0:
-        plt.plot(dissimilar_data[:, 0], dissimilar_data[:, 1], 'ro')
+    # # 高亮不相似点
+    # if dissimilar_data.shape[0] != 0:
+    #     plt.plot(dissimilar_data[:, 0], dissimilar_data[:, 1], 'ro')
     # # 高亮不相似边
     # for e in dissimilar_edges:
     #     plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'r')
 
     #     plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
     #     plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
+
+    # 高亮相似边
+    for e in keep_edges:
+        plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'r')
+
+        plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
+        plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
+
+
     # 标号不相似点
     for i in dissimilar_ids:
         plt.annotate(str(i), (data[i][0], data[i][1]))
 
+
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
-    data_folder = 75
+    data_dim = 3
+    data_size = 100
     data_id_0 = 0
     data_id_1 = 1
 
     ''' read high dimensioal data '''
-    hdd0 = "../data/highdims/{}/fm_{}.txt".format(data_folder, data_id_0) 
-    hdd1 = "../data/highdims/{}/fm_{}.txt".format(data_folder, data_id_1) 
-    esm = "../data/similarities/{}/similar_edges_{}_{}.txt".format(data_folder, data_id_0, data_id_1) 
-    psm = "../data/similarities/{}/similar_points_{}_{}.txt".format(data_folder, data_id_0, data_id_1) 
+    hdd0 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_0) 
+    hdd1 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_1) 
+    esm = "../data/similarities/dim{}/size{}/similar_edges_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
+    psm = "../data/similarities/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
     
 
     X0, labels0, edges0 = read_fm_data(hdd0)
@@ -521,13 +544,27 @@ if __name__ == "__main__":
     match_points = read_match_points(psm)
     # match_points = read_match_points("../data/qt_sim/similar_points_0_%2.txt") # read from c++
 
+    anchor_points = select_anchor_point(match_points, rate = 1.0)
+    ''' filter matching edges with anchor points'''
+    anchor_points0 = []
+    anchor_points1 = []
+    for m in anchor_points:
+        anchor_points0.append(m[0])
+        anchor_points1.append(m[1])
+
+    anchor_edges = {}
+    for m in match_edges:
+        if m[0][0] not in anchor_points0 and m[0][1] not in anchor_points0  and m[1][0] not in anchor_points1 and m[1][1] not in anchor_points1:
+            anchor_edges[m] = match_edges[m]
+
+
     ''' first we apply t-sne to D0 '''
-    Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = 3, perplexity = 20.0)
+    Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = data_dim, perplexity = 20.0) #95.0 20.0
     ''' then we apply joint-tsne to D1 '''
-    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = match_points, no_dims = 2, initial_dims_1 = 3, perplexity = 20.0)
+    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = match_points, no_dims = 2, initial_dims_1 = data_dim, perplexity = 20.0)
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' tsne to D1 comparison '''
-    Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
+    Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = data_dim, perplexity = 20.0)
 
     for m in match_points:
         print(m)
@@ -535,13 +572,15 @@ if __name__ == "__main__":
 
     keep_ids0 = []
     keep_ids1 = []
-    for pair in match_points:
+    # for pair in match_points:
+    for pair in anchor_points:
         keep_ids0.append(pair[0])
         keep_ids1.append(pair[1])
 
     keep_edges0 = []
     keep_edges1 = []
-    for pair in match_edges:
+    # for pair in match_edges:
+    for pair in anchor_edges:
         keep_edges0.append(pair[0])
         keep_edges1.append(pair[1])
 
