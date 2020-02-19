@@ -28,7 +28,24 @@ void Graph::addEdge(int a, int b)
     assert(b >= 0 && b<m_nodes.size());
 
     m_nodes[a].addEdge(b);
-//    m_nodes[b].addEdge(a);
+
+#ifdef UNDIRECT_GRAPH
+    m_nodes[b].addEdge(a);
+#endif
+}
+
+
+bool Graph::hasEdge(int a, int b)
+{
+    if (a < 0 || a >= m_nodes.size() || b < 0 || b>= m_nodes.size())
+    {
+        return false;
+    }
+#ifdef UNDIRECT_GRAPH
+    return m_nodes[a].hasEdge(b) && m_nodes[b].hasEdge(a);
+#else
+    return m_nodes[a].hasEdge(b);
+#endif
 }
 
 void Graph:: renderGraph(QPainter *painter)
@@ -451,8 +468,15 @@ QVector<GraphLet> Graph::SearchGraphLet1(int sid)   // 输入的当前以那个�
             m0.first = n0;
             m1.first = n1;
             m2.first = n2;
+
             m0.second.append(n1);
             m1.second.append(n2);
+
+            // for undirected graph
+#ifdef UNDIRECT_GRAPH
+            m1.second.append(n0);
+            m2.second.append(n1);
+#endif
 
             tmp.append(m0);
             tmp.append(m1);
@@ -498,6 +522,11 @@ QVector<GraphLet> Graph::SearchGraphLet2(int sid)
                     m1.second.append(n2);
                     m2.second.append(n0);
 
+#ifdef UNDIRECT_GRAPH
+                    m1.second.append(n0);
+                    m2.second.append(n1);
+                    m0.second.append(n2);
+#endif
                     tmp.append(m0);
                     tmp.append(m1);
                     tmp.append(m2);
@@ -547,6 +576,11 @@ QVector<GraphLet> Graph::SearchGraphLet3(int sid)
                 m1.second.append(n2);
                 m2.second.append(n3);
 
+#ifdef UNDIRECT_GRAPH
+                m1.second.append(n0);
+                m2.second.append(n1);
+                m3.second.append(n2);
+#endif
                 tmp.append(m0);
                 tmp.append(m1);
                 tmp.append(m2);
@@ -592,6 +626,12 @@ QVector<GraphLet> Graph::SearchGraphLet4(int sid)
                 m0.second.append(n1);
                 m1.second.append(n2);
                 m1.second.append(n3);
+
+#ifdef UNDIRECT_GRAPH
+                m1.second.append(n0);
+                m2.second.append(n1);
+                m3.second.append(n1);
+#endif
                 tmp.append(m0);
                 tmp.append(m1);
                 tmp.append(m2);
@@ -650,6 +690,12 @@ QVector<GraphLet> Graph::SearchGraphLet5(int sid)
                         m2.second.append(n3);
                         m3.second.append(n0);
 
+#ifdef UNDIRECT_GRAPH
+                        m1.second.append(n0);
+                        m2.second.append(n1);
+                        m3.second.append(n2);
+                        m0.second.append(n3);
+#endif
                         tmp.append(m0);
                         tmp.append(m1);
                         tmp.append(m2);
@@ -704,6 +750,13 @@ QVector<GraphLet> Graph::SearchGraphLet6(int sid)
                         m1.second.append(n2);
                         m2.second.append(n3);
                         m3.second.append(n1);
+
+#ifdef UNDIRECT_GRAPH
+                        m1.second.append(n0);
+                        m2.second.append(n1);
+                        m3.second.append(n2);
+                        m1.second.append(n3);
+#endif
                         tmp.append(m0);
                         tmp.append(m1);
                         tmp.append(m2);
@@ -766,7 +819,13 @@ QVector<GraphLet> Graph::SearchGraphLet7(int sid)
                             m2.second.append(n3);
                             m3.second.append(n0);
                             m3.second.append(n1);
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m3.second.append(n2);
+                            m0.second.append(n3);
+                            m1.second.append(n3);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -830,7 +889,14 @@ QVector<GraphLet> Graph::SearchGraphLet8(int sid)
                                     m2.second.append(n3);
                                     m3.second.append(n0);
                                     m3.second.append(n1);
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m2.second.append(n1);
+                                    m0.second.append(n2);
+                                    m3.second.append(n2);
+                                    m0.second.append(n3);
+                                    m1.second.append(n3);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -894,7 +960,12 @@ QVector<GraphLet> Graph::SearchGraphLet9(int sid)
                     m1.second.append(n2);
                     m2.second.append(n3);
                     m3.second.append(n4);
-
+#ifdef UNDIRECT_GRAPH
+                    m1.second.append(n0);
+                    m2.second.append(n1);
+                    m3.second.append(n2);
+                    m4.second.append(n3);
+#endif
                     tmp.append(m0);
                     tmp.append(m1);
                     tmp.append(m2);
@@ -953,7 +1024,12 @@ QVector<GraphLet> Graph::SearchGraphLet10(int sid)
                     m1.second.append(n2);
                     m2.second.append(n3);
                     m2.second.append(n4);
-
+#ifdef UNDIRECT_GRAPH
+                    m1.second.append(n0);
+                    m2.second.append(n1);
+                    m3.second.append(n2);
+                    m4.second.append(n2);
+#endif
                     tmp.append(m0);
                     tmp.append(m1);
                     tmp.append(m2);
@@ -1008,7 +1084,12 @@ QVector<GraphLet> Graph::SearchGraphLet11(int sid)
                     m0.second.append(n2);
                     m0.second.append(n3);
                     m0.second.append(n4);
-
+#ifdef UNDIRECT_GRAPH
+                    m1.second.append(n0);
+                    m2.second.append(n0);
+                    m3.second.append(n0);
+                    m4.second.append(n0);
+#endif
                     tmp.append(m0);
                     tmp.append(m1);
                     tmp.append(m2);
@@ -1076,7 +1157,13 @@ QVector<GraphLet> Graph::SearchGraphLet12(int sid)
                             m1.second.append(n3);
                             m2.second.append(n3);
                             m3.second.append(n4);
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m3.second.append(n1);
+                            m3.second.append(n2);
+                            m4.second.append(n3);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -1146,7 +1233,13 @@ QVector<GraphLet> Graph::SearchGraphLet13(int sid)
                             m2.second.append(n3);
                             m3.second.append(n4);
                             m4.second.append(n2);
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m3.second.append(n2);
+                            m4.second.append(n3);
+                            m2.second.append(n4);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -1216,8 +1309,13 @@ QVector<GraphLet> Graph::SearchGraphLet14(int sid)
                             m1.second.append(n4);
                             m2.second.append(n3);
                             m3.second.append(n1);
-
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m4.second.append(n1);
+                            m3.second.append(n2);
+                            m1.second.append(n3);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -1286,7 +1384,13 @@ QVector<GraphLet> Graph::SearchGraphLet15(int sid)
                             m2.second.append(n3);
                             m3.second.append(n4);
                             m4.second.append(n0);
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m3.second.append(n2);
+                            m4.second.append(n3);
+                            m0.second.append(n4);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -1356,7 +1460,13 @@ QVector<GraphLet> Graph::SearchGraphLet16(int sid)
                             m2.second.append(n3);
                             m3.second.append(n4);
                             m4.second.append(n1);
-
+#ifdef UNDIRECT_GRAPH
+                            m1.second.append(n0);
+                            m2.second.append(n1);
+                            m3.second.append(n2);
+                            m4.second.append(n3);
+                            m1.second.append(n4);
+#endif
                             tmp.append(m0);
                             tmp.append(m1);
                             tmp.append(m2);
@@ -1433,7 +1543,14 @@ QVector<GraphLet> Graph::SearchGraphLet17(int sid)
                                     m2.second.append(n3);
                                     m3.second.append(n4);
                                     m4.second.append(n1);
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m2.second.append(n1);
+                                    m3.second.append(n1);
+                                    m3.second.append(n2);
+                                    m4.second.append(n3);
+                                    m1.second.append(n4);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -1512,8 +1629,14 @@ QVector<GraphLet> Graph::SearchGraphLet18(int sid)
                                     m2.second.append(n3);
                                     m3.second.append(n1);
                                     m4.second.append(n0);
-
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m2.second.append(n1);
+                                    m4.second.append(n1);
+                                    m3.second.append(n2);
+                                    m1.second.append(n3);
+                                    m0.second.append(n4);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -1592,7 +1715,14 @@ QVector<GraphLet> Graph::SearchGraphLet19(int sid)
                                     m2.second.append(n4);
                                     m3.second.append(n4);
                                     m4.second.append(n1);
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m2.second.append(n1);
+                                    m3.second.append(n2);
+                                    m4.second.append(n2);
+                                    m4.second.append(n3);
+                                    m1.second.append(n4);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -1671,7 +1801,14 @@ QVector<GraphLet> Graph::SearchGraphLet20(int sid)
                                     m2.second.append(n3);
                                     m3.second.append(n0);
                                     m4.second.append(n2);
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m4.second.append(n0);
+                                    m2.second.append(n1);
+                                    m3.second.append(n2);
+                                    m0.second.append(n3);
+                                    m2.second.append(n4);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -1751,7 +1888,14 @@ QVector<GraphLet> Graph::SearchGraphLet21(int sid)
                                     m2.second.append(n3);
                                     m3.second.append(n4);
                                     m4.second.append(n0);
-
+#ifdef UNDIRECT_GRAPH
+                                    m1.second.append(n0);
+                                    m2.second.append(n0);
+                                    m2.second.append(n1);
+                                    m3.second.append(n2);
+                                    m4.second.append(n3);
+                                    m0.second.append(n4);
+#endif
                                     tmp.append(m0);
                                     tmp.append(m1);
                                     tmp.append(m2);
@@ -1837,7 +1981,15 @@ QVector<GraphLet> Graph::SearchGraphLet22(int sid)
                                             m0.second.append(n4);
                                             m4.second.append(n2);
                                             m0.second.append(n2);
-
+#ifdef UNDIRECT_GRAPH
+                                            m1.second.append(n0);
+                                            m2.second.append(n1);
+                                            m3.second.append(n2);
+                                            m0.second.append(n3);
+                                            m4.second.append(n0);
+                                            m2.second.append(n4);
+                                            m2.second.append(n0);
+#endif
                                             tmp.append(m0);
                                             tmp.append(m1);
                                             tmp.append(m2);
@@ -1922,7 +2074,15 @@ QVector<GraphLet> Graph::SearchGraphLet23(int sid)
                                         m3.second.append(n1);
                                         m4.second.append(n2);
                                         m4.second.append(n3);
-
+#ifdef UNDIRECT_GRAPH
+                                        m1.second.append(n0);
+                                        m2.second.append(n1);
+                                        m4.second.append(n1);
+                                        m3.second.append(n2);
+                                        m1.second.append(n3);
+                                        m2.second.append(n4);
+                                        m3.second.append(n4);
+#endif
                                         tmp.append(m0);
                                         tmp.append(m1);
                                         tmp.append(m2);
@@ -2006,7 +2166,15 @@ QVector<GraphLet> Graph::SearchGraphLet24(int sid)
                                         m2.second.append(n3);
                                         m3.second.append(n4);
                                         m4.second.append(n0);
-
+#ifdef UNDIRECT_GRAPH
+                                        m1.second.append(n0);
+                                        m2.second.append(n0);
+                                        m3.second.append(n0);
+                                        m2.second.append(n1);
+                                        m3.second.append(n2);
+                                        m4.second.append(n3);
+                                        m0.second.append(n4);
+#endif
                                         tmp.append(m0);
                                         tmp.append(m1);
                                         tmp.append(m2);
@@ -2090,10 +2258,17 @@ QVector<GraphLet> Graph::SearchGraphLet25(int sid)
                                         m1.second.append(n2);
                                         m2.second.append(n3);
                                         m3.second.append(n0);
-
                                         m4.second.append(n1);
                                         m4.second.append(n3);
-
+#ifdef UNDIRECT_GRAPH
+                                        m1.second.append(n0);
+                                        m4.second.append(n0);
+                                        m2.second.append(n1);
+                                        m3.second.append(n2);
+                                        m0.second.append(n3);
+                                        m1.second.append(n4);
+                                        m3.second.append(n4);
+#endif
                                         tmp.append(m0);
                                         tmp.append(m1);
                                         tmp.append(m2);
@@ -2187,7 +2362,16 @@ QVector<GraphLet> Graph::SearchGraphLet26(int sid)
                                                     m4.second.append(n2);
                                                     m4.second.append(n3);
                                                     m0.second.append(n2);
-
+#ifdef UNDIRECT_GRAPH
+                                                    m1.second.append(n0);
+                                                    m2.second.append(n1);
+                                                    m3.second.append(n2);
+                                                    m0.second.append(n3);
+                                                    m4.second.append(n0);
+                                                    m2.second.append(n4);
+                                                    m3.second.append(n4);
+                                                    m2.second.append(n0);
+#endif
                                                     tmp.append(m0);
                                                     tmp.append(m1);
                                                     tmp.append(m2);
@@ -2278,11 +2462,19 @@ QVector<GraphLet> Graph::SearchGraphLet27(int sid)
                                             m1.second.append(n2);
                                             m2.second.append(n3);
                                             m3.second.append(n0);
-
                                             m4.second.append(n1);
                                             m4.second.append(n2);
                                             m4.second.append(n3);
-
+#ifdef UNDIRECT_GRAPH
+                                            m1.second.append(n0);
+                                            m4.second.append(n0);
+                                            m2.second.append(n1);
+                                            m3.second.append(n2);
+                                            m0.second.append(n3);
+                                            m1.second.append(n4);
+                                            m2.second.append(n4);
+                                            m3.second.append(n4);
+#endif
                                             tmp.append(m0);
                                             tmp.append(m1);
                                             tmp.append(m2);
@@ -2375,15 +2567,23 @@ QVector<GraphLet> Graph::SearchGraphLet28(int sid)
                                                             m0.second.append(n1);
                                                             m0.second.append(n4);
                                                             m0.second.append(n2);
-
                                                             m1.second.append(n2);
                                                             m2.second.append(n3);
                                                             m3.second.append(n0);
-
                                                             m4.second.append(n1);
                                                             m4.second.append(n2);
                                                             m4.second.append(n3);
-
+#ifdef UNDIRECT_GRAPH
+                                                            m1.second.append(n0);
+                                                            m4.second.append(n0);
+                                                            m2.second.append(n0);
+                                                            m2.second.append(n1);
+                                                            m3.second.append(n2);
+                                                            m0.second.append(n3);
+                                                            m1.second.append(n4);
+                                                            m2.second.append(n4);
+                                                            m3.second.append(n4);
+#endif
 
                                                             tmp.append(m0);
                                                             tmp.append(m1);
@@ -2480,16 +2680,24 @@ QVector<GraphLet> Graph::SearchGraphLet29(int sid)
                                                     m0.second.append(n2);
                                                     m0.second.append(n3);
                                                     m0.second.append(n4);
-
                                                     m1.second.append(n2);
                                                     m1.second.append(n3);
                                                     m1.second.append(n4);
-
                                                     m2.second.append(n3);
                                                     m2.second.append(n4);
-
                                                     m3.second.append(n4);
-
+#ifdef UNDIRECT_GRAPH
+                                                    m1.second.append(n0);
+                                                    m2.second.append(n0);
+                                                    m3.second.append(n0);
+                                                    m4.second.append(n0);
+                                                    m2.second.append(n1);
+                                                    m3.second.append(n1);
+                                                    m4.second.append(n1);
+                                                    m3.second.append(n2);
+                                                    m4.second.append(n2);
+                                                    m4.second.append(n3);
+#endif
                                                     tmp.append(m0);
                                                     tmp.append(m1);
                                                     tmp.append(m2);
@@ -2579,6 +2787,31 @@ void Graph::DedupGraphLets(QVector<GraphLet> &allGraphlets)
 
 
 void Graph::SortGraphLet(GraphLet& glet) {
+
+#ifndef UNDIRECT_GRAPH
+    // if the graph is directed, we synmetric the graphlet for de-duplication
+    for (int i = 0; i < glet.size(); i++)
+    {
+        int ni = glet[i].first;
+        for (int j = 0; j < glet[i].second.size(); j++)
+        {
+            int  nj = glet[i].second[j];
+            // if (ni, nj) exists
+            for (int k = 0; k < glet.size(); k++)
+            {
+                // insert (nj, ni)
+                if (glet[k].first == nj)
+                {
+                    if(!glet[nj].second.contains(ni))
+                    {
+                        glet[nj].second.append(ni);
+                    }
+                }
+            }
+        }
+    }
+#endif
+
     // sort nodes within the graphlet
     std::sort(glet.begin(), glet.end(),
               [](GraphLetNode& gnode1, GraphLetNode&gnode2)

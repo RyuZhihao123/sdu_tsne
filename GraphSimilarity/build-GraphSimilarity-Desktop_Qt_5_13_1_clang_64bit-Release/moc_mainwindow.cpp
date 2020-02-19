@@ -10,6 +10,7 @@
 #include "../mainwindow.h"
 #include <QtCore/qbytearray.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/QVector>
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'mainwindow.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
@@ -22,8 +23,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
-    QByteArrayData data[26];
-    char stringdata0[309];
+    QByteArrayData data[31];
+    char stringdata0[387];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -50,14 +51,19 @@ QT_MOC_LITERAL(14, 175, 17), // "on_btnGFD_clicked"
 QT_MOC_LITERAL(15, 193, 17), // "on_btnSim_clicked"
 QT_MOC_LITERAL(16, 211, 12), // "read_fm_data"
 QT_MOC_LITERAL(17, 224, 8), // "fileName"
-QT_MOC_LITERAL(18, 233, 8), // "saveSims"
-QT_MOC_LITERAL(19, 242, 9), // "MatchList"
-QT_MOC_LITERAL(20, 252, 9), // "matchList"
-QT_MOC_LITERAL(21, 262, 8), // "calcSims"
-QT_MOC_LITERAL(22, 271, 6), // "Graph&"
-QT_MOC_LITERAL(23, 278, 2), // "g1"
-QT_MOC_LITERAL(24, 281, 2), // "g2"
-QT_MOC_LITERAL(25, 284, 24) // "on_btnLoadFmData_clicked"
+QT_MOC_LITERAL(18, 233, 13), // "savePointSims"
+QT_MOC_LITERAL(19, 247, 14), // "QVector<float>"
+QT_MOC_LITERAL(20, 262, 11), // "matchScores"
+QT_MOC_LITERAL(21, 274, 12), // "saveEdgeSims"
+QT_MOC_LITERAL(22, 287, 13), // "MatchEdgeList"
+QT_MOC_LITERAL(23, 301, 10), // "matchEdges"
+QT_MOC_LITERAL(24, 312, 13), // "calcPointSims"
+QT_MOC_LITERAL(25, 326, 6), // "Graph&"
+QT_MOC_LITERAL(26, 333, 2), // "g1"
+QT_MOC_LITERAL(27, 336, 2), // "g2"
+QT_MOC_LITERAL(28, 339, 12), // "calcEdgeSims"
+QT_MOC_LITERAL(29, 352, 9), // "pointSims"
+QT_MOC_LITERAL(30, 362, 24) // "on_btnLoadFmData_clicked"
 
     },
     "MainWindow\0slot_openGraph\0\0slot_saveGraph\0"
@@ -66,8 +72,10 @@ QT_MOC_LITERAL(25, 284, 24) // "on_btnLoadFmData_clicked"
     "nodeNum\0edgeNum\0on_comboBox_activated\0"
     "index\0on_btnClear_clicked\0on_btnGFD_clicked\0"
     "on_btnSim_clicked\0read_fm_data\0fileName\0"
-    "saveSims\0MatchList\0matchList\0calcSims\0"
-    "Graph&\0g1\0g2\0on_btnLoadFmData_clicked"
+    "savePointSims\0QVector<float>\0matchScores\0"
+    "saveEdgeSims\0MatchEdgeList\0matchEdges\0"
+    "calcPointSims\0Graph&\0g1\0g2\0calcEdgeSims\0"
+    "pointSims\0on_btnLoadFmData_clicked"
 };
 #undef QT_MOC_LITERAL
 
@@ -77,7 +85,7 @@ static const uint qt_meta_data_MainWindow[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-      16,   14, // methods
+      18,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -85,22 +93,24 @@ static const uint qt_meta_data_MainWindow[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   94,    2, 0x08 /* Private */,
-       3,    0,   95,    2, 0x08 /* Private */,
-       4,    0,   96,    2, 0x08 /* Private */,
-       5,    0,   97,    2, 0x08 /* Private */,
-       6,    0,   98,    2, 0x08 /* Private */,
-       7,    2,   99,    2, 0x08 /* Private */,
-       7,    1,  104,    2, 0x28 /* Private | MethodCloned */,
-       7,    0,  107,    2, 0x28 /* Private | MethodCloned */,
-      11,    1,  108,    2, 0x08 /* Private */,
-      13,    0,  111,    2, 0x08 /* Private */,
-      14,    0,  112,    2, 0x08 /* Private */,
-      15,    0,  113,    2, 0x08 /* Private */,
-      16,    1,  114,    2, 0x08 /* Private */,
-      18,    2,  117,    2, 0x08 /* Private */,
-      21,    2,  122,    2, 0x08 /* Private */,
-      25,    0,  127,    2, 0x08 /* Private */,
+       1,    0,  104,    2, 0x08 /* Private */,
+       3,    0,  105,    2, 0x08 /* Private */,
+       4,    0,  106,    2, 0x08 /* Private */,
+       5,    0,  107,    2, 0x08 /* Private */,
+       6,    0,  108,    2, 0x08 /* Private */,
+       7,    2,  109,    2, 0x08 /* Private */,
+       7,    1,  114,    2, 0x28 /* Private | MethodCloned */,
+       7,    0,  117,    2, 0x28 /* Private | MethodCloned */,
+      11,    1,  118,    2, 0x08 /* Private */,
+      13,    0,  121,    2, 0x08 /* Private */,
+      14,    0,  122,    2, 0x08 /* Private */,
+      15,    0,  123,    2, 0x08 /* Private */,
+      16,    1,  124,    2, 0x08 /* Private */,
+      18,    2,  127,    2, 0x08 /* Private */,
+      21,    2,  132,    2, 0x08 /* Private */,
+      24,    2,  137,    2, 0x08 /* Private */,
+      28,    3,  142,    2, 0x08 /* Private */,
+      30,    0,  149,    2, 0x08 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
@@ -117,7 +127,9 @@ static const uint qt_meta_data_MainWindow[] = {
     QMetaType::Void,
     0x80000000 | 8, QMetaType::QString,   17,
     QMetaType::Void, 0x80000000 | 19, QMetaType::QString,   20,   17,
-    0x80000000 | 19, 0x80000000 | 22, 0x80000000 | 22,   23,   24,
+    QMetaType::Void, 0x80000000 | 22, QMetaType::QString,   23,   17,
+    0x80000000 | 19, 0x80000000 | 25, 0x80000000 | 25,   26,   27,
+    0x80000000 | 22, 0x80000000 | 25, 0x80000000 | 25, 0x80000000 | 19,   26,   27,   29,
     QMetaType::Void,
 
        0        // eod
@@ -146,11 +158,32 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 11: _t->on_btnSim_clicked(); break;
         case 12: { Graph _r = _t->read_fm_data((*reinterpret_cast< const QString(*)>(_a[1])));
             if (_a[0]) *reinterpret_cast< Graph*>(_a[0]) = std::move(_r); }  break;
-        case 13: _t->saveSims((*reinterpret_cast< const MatchList(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
-        case 14: { MatchList _r = _t->calcSims((*reinterpret_cast< Graph(*)>(_a[1])),(*reinterpret_cast< Graph(*)>(_a[2])));
-            if (_a[0]) *reinterpret_cast< MatchList*>(_a[0]) = std::move(_r); }  break;
-        case 15: _t->on_btnLoadFmData_clicked(); break;
+        case 13: _t->savePointSims((*reinterpret_cast< const QVector<float>(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 14: _t->saveEdgeSims((*reinterpret_cast< const MatchEdgeList(*)>(_a[1])),(*reinterpret_cast< const QString(*)>(_a[2]))); break;
+        case 15: { QVector<float> _r = _t->calcPointSims((*reinterpret_cast< Graph(*)>(_a[1])),(*reinterpret_cast< Graph(*)>(_a[2])));
+            if (_a[0]) *reinterpret_cast< QVector<float>*>(_a[0]) = std::move(_r); }  break;
+        case 16: { MatchEdgeList _r = _t->calcEdgeSims((*reinterpret_cast< Graph(*)>(_a[1])),(*reinterpret_cast< Graph(*)>(_a[2])),(*reinterpret_cast< const QVector<float>(*)>(_a[3])));
+            if (_a[0]) *reinterpret_cast< MatchEdgeList*>(_a[0]) = std::move(_r); }  break;
+        case 17: _t->on_btnLoadFmData_clicked(); break;
         default: ;
+        }
+    } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        switch (_id) {
+        default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+        case 13:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 0:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QVector<float> >(); break;
+            }
+            break;
+        case 16:
+            switch (*reinterpret_cast<int*>(_a[1])) {
+            default: *reinterpret_cast<int*>(_a[0]) = -1; break;
+            case 2:
+                *reinterpret_cast<int*>(_a[0]) = qRegisterMetaType< QVector<float> >(); break;
+            }
+            break;
         }
     }
 }
@@ -184,13 +217,13 @@ int MainWindow::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 16)
+        if (_id < 18)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 16;
+        _id -= 18;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 16)
-            *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 16;
+        if (_id < 18)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 18;
     }
     return _id;
 }

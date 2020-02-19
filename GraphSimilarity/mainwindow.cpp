@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     {
         ui->comboBox->addItem(QString("Graph:%1").arg(i+1));
     }
-//    ui->comboBox->setCurrentIndex(19);
+    //    ui->comboBox->setCurrentIndex(19);
 
     connect(ui->btnOpen, SIGNAL(clicked(bool)), this, SLOT(slot_openGraph()));
     connect(ui->btnSave,SIGNAL(clicked(bool)),this,SLOT(slot_saveGraph()));
@@ -216,11 +216,11 @@ Graph MainWindow::read_fm_data(const QString& fileName)
     Graph g;
 
     QFile file(fileName);
-//    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-//    {
-//        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
-//        return;
-//    }
+    //    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    //    {
+    //        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
+    //        return;
+    //    }
     file.open(QIODevice::ReadOnly);
 
     QTextStream ts(&file);
@@ -260,7 +260,7 @@ Graph MainWindow::read_fm_data(const QString& fileName)
     return g;
 }
 
-void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
+void MainWindow::savePointSims(const QVector<float> &matchScores, const QString &fileName)
 {
     QFile file(fileName);
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -270,15 +270,39 @@ void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
     }
     else
     {
-        int count = 0;
         QTextStream textStream(&file);
-        for (auto iter = matchList.begin(); iter != matchList.end(); iter++)
+        for (int i = 0; i < matchScores.size(); i++)
         {
-            if (iter.key().first != iter.key().second)
-            {
-                count ++;
-            }
+            qDebug() << "save: " << i << ", " << i << ", " << matchScores[i];
+            textStream << QString::number(i);
+            textStream << "\t";
+            textStream << QString::number(i);
+            textStream << "\t";
+            textStream << matchScores[i];
+            textStream << "\n";
+        }
+        file.close();
+    }
+}
+
+void MainWindow::saveEdgeSims(const MatchEdgeList &matchEdges, const QString &fileName)
+{
+    QFile file(fileName);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
+        return;
+    }
+    else
+    {
+        QTextStream textStream(&file);
+        for (auto iter = matchEdges.begin(); iter != matchEdges.end(); iter++)
+        {
             qDebug() << "save: " << iter.key().first << ", " << iter.key().second << ", " << iter.value();
+            textStream << QString::number(iter.key().first);
+            textStream << "\t";
+            textStream << QString::number(iter.key().second);
+            textStream << "\t";
             textStream << QString::number(iter.key().first);
             textStream << "\t";
             textStream << QString::number(iter.key().second);
@@ -286,20 +310,20 @@ void MainWindow::saveSims(const MatchList &matchList, const QString &fileName)
             textStream << iter.value();
             textStream << "\n";
         }
-        qDebug() << "number of mismatch points: " << count;
         file.close();
     }
 }
 
 void MainWindow::on_btnSim_clicked()
 {
-//    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
-//    assert(filenames.size() == 2);
+    //    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
+    //    assert(filenames.size() == 2);
     // Pick the last two files
     Graph g0 = read_fm_data(m_filenames[m_filenames.size()-2]);
     Graph g1 = read_fm_data(m_filenames[m_filenames.size()-1]);
 
-    MatchList matchList = calcSims(g0, g1);
+    QVector<float> pointSims = calcPointSims(g0, g1);
+    MatchEdgeList matchEdges = calcEdgeSims(g0, g1,pointSims);
 
     QString baseName0 = QFileInfo(m_filenames[m_filenames.size()-2]).baseName();
     QString baseName1 = QFileInfo(m_filenames[m_filenames.size()-1]).baseName();
@@ -307,45 +331,58 @@ void MainWindow::on_btnSim_clicked()
     int d0 = (baseName0.split("_")[1]).toInt();
     int d1 = (baseName1.split("_")[1]).toInt();
 
-    saveSims(matchList,
-             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%2.txt").arg(d0, d1));
+    savePointSims(pointSims,
+             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%1.txt").arg(d0, d1));
+    saveEdgeSims(matchEdges,
+             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_edges_%1_%1.txt").arg(d0, d1));
 }
 
-MatchList MainWindow::calcSims(Graph &g1, Graph &g2)
+QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
 {
-    MatchList matchList;
+    QVector<float> matchScores;
 
     for (int i = 0; i < g1.nodeNum(); i++)
     {
-//        QVector<float> vi = g1.GetfeatureVector(i);
-        QVector<float> vi = g1.GetfeatureVectorAll(i);
+        QVector<float> vi_1 = g1.GetfeatureVectorAll(i);
+        QVector<float> vi_2 = g2.GetfeatureVectorAll(i);
 
+        float sum = 0.f;
+        float len1 = 0.f, len2 = 0.f;
+        for(int k = 0; k < vi_1.size(); k++)
+        {
+            // dot product bewteen v1 and v2
+            sum += vi_1[k]*vi_2[k];
+            // dot product bewteen v1 and v1
+            len1 += vi_1[k]*vi_1[k];
+            // dot product bewteen v2 and v2
+            len2 += vi_2[k]*vi_2[k];
+        }
+        len1 = sqrtf(len1);
+        len2 = sqrtf(len2);
 
-//            QVector<float> vj = g2.GetfeatureVector(j);
-            QVector<float> vj = g2.GetfeatureVectorAll(j);
-
-            float sum = 0.f;
-            float len1 = 0.f, len2 = 0.f;
-            for(int k = 0; k < vi.size(); k++)
-            {
-                // dot product bewteen v1 and v2
-                sum += vi[k]*vj[k];
-                // dot product bewteen v1 and v1
-                len1 += vi[k]*vi[k];
-                // dot product bewteen v2 and v2
-                len2 += vj[k]*vj[k];
-            }
-            len1 = sqrtf(len1);
-            len2 = sqrtf(len2);
-
-            float s = sum / (len1 * len2);
-
-
-        matchList[QPair<int, int>(i, i)] = s;
-//        matchList[minP] = minS;
+        float s = sum / (len1 * len2);
+        matchScores.push_back(s);
     }
 
-    return matchList;
+    return matchScores;
+}
+
+MatchEdgeList MainWindow::calcEdgeSims(Graph &g1, Graph &g2, const QVector<float> &pointSims)
+{
+    MatchEdgeList matchEdges;
+    for (int i = 0; i < g1.nodeNum(); i++)
+    {
+        Node* ni = g1.GetNode(i);
+        for (int j = 0; j < ni->childs.size(); j++)
+        {
+            if (g2.hasEdge(i, ni->childs[j]))
+            {
+                matchEdges[QPair<int, int>(i, ni->childs[j])] = (pointSims[i] + pointSims[ni->childs[j]])/2.f;
+            }
+        }
+    }
+
+    return matchEdges;
 }
 
 void MainWindow::on_btnLoadFmData_clicked()

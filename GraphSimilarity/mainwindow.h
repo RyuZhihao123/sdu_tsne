@@ -44,10 +44,13 @@ private slots:
     Graph read_fm_data(const QString& fileName);
 
     // save similarities to file
-    void saveSims(const MatchList& matchList, const QString& fileName);
+    void savePointSims(const QVector<float>& matchScores, const QString& fileName);
+    void saveEdgeSims(const MatchEdgeList& matchEdges, const QString& fileName);
 
     // compute the similarities between two graphs
-    MatchList calcSims(Graph& g1, Graph& g2);
+    QVector<float> calcPointSims(Graph& g1, Graph& g2);
+    MatchEdgeList calcEdgeSims(Graph& g1, Graph& g2, const QVector<float>& pointSims);
+
     void on_btnLoadFmData_clicked();
 
 private:

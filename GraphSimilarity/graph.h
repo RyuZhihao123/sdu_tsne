@@ -23,16 +23,23 @@ struct Node    // 图
         if(!childs.contains(id))
             childs.push_back(id);
     }
+
+    bool hasEdge(int id)
+    {
+        return childs.contains(id);
+    }
 };
 
 typedef QPair<int,QVector<int>> GraphLetNode;   // node and its adjacient edges, which is an undirected graph
 typedef QVector<GraphLetNode> GraphLet;         // graphlet representation
 typedef QVector<float> GFD;                     // graphlet frequency distribution
 
-typedef QMap<QPair<int, int>, float> MatchList;// matching point and their similarities
-//typedef QVector<MatchPoint> MatchList;
+//typedef QMap<QPair<int, int>, float> MatchPointList;// matching point and their similarities
+typedef QMap<QPair<int, int>, float> MatchEdgeList;
 
-// Undirected graph
+// Undirected graph or directed graph
+#define UNDIRECT_GRAPH
+
 class Graph
 {
 public:
@@ -44,7 +51,9 @@ public:
     int nodeNum() const;
 
     void addNode(const Node& n);
-    void addEdge(int a, int b);             // now directed graph
+    void addEdge(int a, int b);
+
+    bool hasEdge(int a, int b);
 
     void renderGraph(QPainter* painter);
     void renderCurGraphLets(QPainter* painter);
@@ -107,7 +116,7 @@ private:
 
     // de-duplicate graphlets of certain type
     void DedupGraphLets(QVector<GraphLet>& allGraphlets);
-    // sort graphlet node in a graphlet
+    // sort graphlet node in a graphlet and symmetrization
     void SortGraphLet(GraphLet& glet);
     // determine whether two graphlets are the same.
     // Before calling this function, glet1 and glet2 must be sorted.
