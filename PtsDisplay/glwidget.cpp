@@ -109,6 +109,33 @@ void GLWidget::paintGL()
         m_pointProgram->setUniformValue("isColor",m_isColored);
         m_objloader->renderPts(m_pointProgram,m_modelMat);
     }
+
+
+    QMatrix4x4 M, V, P;
+    M = m_modelMat;
+    V = m_viewMatrix;
+    P = m_projectMatrix;
+
+    QMatrix4x4 PVM = P*V*M;
+
+    QVector<QPair<int, QVector2D>> labelPos;
+    // compute x,y for each label
+    for (int i = 0; i < m_objloader->m_vertices.size(); i++)
+    {
+        QVector4D tmp = PVM*QVector4D(m_objloader->m_vertices[i], 1.f);
+        QVector4D tmp2 = tmp/tmp.w();
+//        QVector4D tmp2 = tmp;
+//        qDebug() << tmp2;
+
+        float x = tmp2.x()*width()/2 + width()/2;
+        float y = height() - (tmp2.y()*height()/2 +height()/2);
+
+//        qDebug() << x << " " << y;
+        labelPos.append(QPair<int, QVector2D>(i, QVector2D(x, y)));
+    }
+
+    // emit the signal to MainWindow
+    emit drawLabel(labelPos);
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *event)

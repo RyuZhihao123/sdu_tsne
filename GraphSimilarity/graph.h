@@ -1,6 +1,6 @@
 #ifndef GRAPH_H
 #define GRAPH_H
-#define MAX_SEARCH_RANGE 1  //1 is the best?
+#define MAX_SEARCH_RANGE 30
 #define ALL_GRAPHLET    29
 
 #include <QVector>
@@ -78,8 +78,9 @@ public:
     QVector<QVector<GraphLet>> GetNeighborGraphlets(int sid);
     QVector<QVector<GraphLet>> GetNeighborGraphletsAll(int sid);
 
-     // return the feature vector of given node
+     // concat gfd of different levels
     QVector<float> GetfeatureVector(int sid);
+    // simply count all graphlets in the neighborhood
     QVector<float> GetfeatureVectorAll(int sid);
 private:
     // A family of functions for searching graphlets

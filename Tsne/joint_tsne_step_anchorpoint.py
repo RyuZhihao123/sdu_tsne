@@ -20,10 +20,8 @@ import networkx as nx
 
 
 
-beta_ = 0.01 # 0.01
-gamma_ = 0.03 # 0.05
-
 def read_fm_data(filepath):
+    print("read file: " + filepath)
     pts = []
     labels = []
     edges = []
@@ -70,19 +68,9 @@ def read_fm_data(filepath):
         
         return np.array(pts), labels, edges
 
-
-def read_match_edges(filepath):
-    match_edges = {}
-    with open(filepath, 'r', encoding='utf-8') as f:
-        for line in f:
-            line=line.strip('\n')
-            items = line.split()
-            match_edges[((int(items[0]), int(items[1])), 
-            (int(items[2]), int(items[3])))] = float(items[4])
-
-    return match_edges
-
 def read_match_points(filepath):
+    print("read file: " + filepath)
+
     match_points = {}
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
@@ -92,15 +80,76 @@ def read_match_points(filepath):
 
     return match_points
 
+
+def point_wise_dist(X0, X1):
+    assert(X0.shape[0]== X1.shape[0])
+    # now we simply assume that two data has the same dimensionalities
+    assert(X0.shape[1]== X1.shape[1])
+    # '''(a-b)^2 = a^2 + b^2 - 2*a*b'''
+    # sum_x = np.sum(np.square(x), 1)
+    # dist = np.add(np.add(-2 * np.dot(x, x.T), sum_x).T, sum_x)
+    D = np.zeros(X0.shape[0])
+    for i in range(X0.shape[0]):
+            D[i] = np.sum(np.square(X0[i,:]-X1[i, :]))
+
+    return D
+
+# def read_match_edges(filepath):
+#     match_edges = {}
+#     with open(filepath, 'r', encoding='utf-8') as f:
+#         for line in f:
+#             line=line.strip('\n')
+#             items = line.split()
+#             match_edges[((int(items[0]), int(items[1])), 
+#             (int(items[2]), int(items[3])))] = float(items[4])
+
+#     return match_edges
+
+
+# def find_match_edges(edges0, edges1, match_undirected_edges):
+#     match_edges = {}
+#     for e0 in edges0:
+#         for e1 in edges1:
+#             if e0 == e1:
+#                 match_edges[(e0, e1)] = match_undirected_edges[(e0, e1)]
+
+#     return match_edges
+
+
+def find_match_edges(edges0, edges1, match_points):
+    match_edges = {}
+    for e0 in edges0:
+        for e1 in edges1:
+            if e0 == e1:    # common edge
+                match_edges[(e0, e1)] = match_points[(e0[0], e0[0])]*match_points[(e0[1], e0[1])] # compute edge similarity using point similarity
+
+    return match_edges
+
+
+
 def select_anchor_point(match_points, rate = 0.15):
     sim_scores = list(match_points.values())
+
+    # 从前往后是similarity score减小的下标
     rank = np.argsort(sim_scores)[::-1]
     # print(int(len(rank)))
 
     points = list(match_points.keys())
-    anchor_point = {points[i]:sim_scores[i] for i in range(int(rate*len(rank)))}
+    anchor_point = {points[i]:sim_scores[i] for i in rank[:int(rate*len(rank))]}
 
     return anchor_point
+
+def common_neighbor_ratio(node_num, edges0, edges1, Neighbor_size = 2):
+    ratios = [0 for i in range(node_num)]
+    for e0 in edges0:
+        for e1 in edges1:
+             if e0 == e1:
+                 ratios[e0[0]] += 1
+    
+    for i in range(node_num):
+        ratios[i] /= float(Neighbor_size)
+
+    return ratios
 
 
 def Hbeta(D=np.array([]), beta=1.0):
@@ -282,6 +331,273 @@ def tsne(X=np.array([]), Y_I = np.array([]), no_dims=2, initial_dims=50, perplex
     # Return solution
     return Y, Y_1_I
 
+def joint_tsne_edge(Y_0=np.array([]), 
+                X_1=np.array([]),
+                Y_1_I = np.array([]), 
+                match_edges = {},
+               no_dims=2,
+               initial_dims_1=50,
+               perplexity=30.0):
+
+    beta_ = 0.00001 # 0.00001 0.00002 0.000001
+    """
+        Runs t-SNE on two datasets in the NxD array X to reduce its
+        dimensionality to no_dims dimensions. The syntaxis of the function is
+        `Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
+    """
+
+    # Check inputs
+    if isinstance(no_dims, float):
+        print("Error: array X should have type float.")
+        return -1
+    if round(no_dims) != no_dims:
+        print("Error: number of dimensions should be an integer.")
+        return -1
+
+    # Initialize variables
+    X_1 = pca(X_1, initial_dims_1).real
+
+    (n1, d1) = X_1.shape
+
+    max_iter = 2000 #2000
+    initial_momentum = 0.5
+    final_momentum = 0.8
+    # momentum
+    eta = 500
+    min_gain = 0.01
+
+    # Y1 = np.random.randn(n1, no_dims)
+    Y1 = Y_1_I
+    # dy1: gradient for data2
+    dY1 = np.zeros((n1, no_dims))     
+    iY1 = np.zeros((n1, no_dims))
+    gains1 = np.ones((n1, no_dims))
+
+    # 对称化
+    P1 = x2p(X_1, 1e-5, perplexity)
+    P1 = P1 + np.transpose(P1)
+    P1 = P1 / np.sum(P1)
+    # early exaggeration
+    # _beta_ = beta_ * 2.
+    _beta_ = beta_
+    P1 = P1 * 4.
+    P1 = np.maximum(P1, 1e-12)
+
+    # Run iterations
+    for iter in range(max_iter):
+        # Compute pairwise affinities
+        sum_Y1 = np.sum(np.square(Y1), 1)
+        num1 = -2. * np.dot(Y1, Y1.T)
+        num1 = 1. / (1. + np.add(np.add(num1, sum_Y1).T, sum_Y1)) # qij分子 ????
+        num1[range(n1), range(n1)] = 0.
+        Q1 = num1 / np.sum(num1)  # qij
+        Q1 = np.maximum(Q1, 1e-12)
+
+        ''' 
+        Compute gradient
+        '''
+        PQ1 = P1 - Q1
+
+        for i in range(n1):
+            dY1[i, :] = np.sum(np.tile(PQ1[:, i] * num1[:, i], (no_dims, 1)).T * (Y1[i, :] - Y1), 0) 
+                # dY1[i, :] = 0
+                # + penalty gradient
+            for m in match_edges:
+                 # get matching edge
+                eij = m[0]
+                ekl = m[1]
+
+                vi = eij[0]
+                vj = eij[1]
+                vk = ekl[0]
+                vl = ekl[1]
+
+                if vk == i:
+                    # get edge vector
+                    d0 = np.subtract(Y_0[vi, :], Y_0[vj, :])
+                    d1 = np.subtract(Y1[i, :], Y1[vl, :])
+                    # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1))
+                    # dY1[i, :] -= (_beta_*similarities[m]*(d0-d1)/len(match_edges))
+                    dY1[i, :] -= 2*_beta_*match_edges[m]*(d0-d1)          
+
+
+        # Perform the update
+        if iter < 20:
+            momentum = initial_momentum
+        else:
+            momentum = final_momentum
+
+        gains1 = (gains1 + 0.2) * ((dY1 > 0.) != (iY1 > 0.)) + \
+            (gains1 * 0.8) * ((dY1 > 0.) == (iY1 > 0.))
+        gains1[gains1 < min_gain] = min_gain
+
+        # update momentum
+        # momentum is the 阻力
+        iY1 = momentum * iY1 - eta * (gains1 * dY1)
+
+        # update y
+        Y1 = Y1 + iY1
+
+        # subtract mean
+        Y1 = Y1 - np.tile(np.mean(Y1, 0), (n1, 1))
+
+        
+        ''' 
+        Compute current value of cost function
+        '''
+        if (iter + 1) % 10 == 0:
+            C0 = np.sum(P1 * np.log(P1 / Q1))
+            C1= 0
+            # + penalty term
+            for m in match_edges:
+                # get matching edge
+                eij = m[0]
+                ekl = m[1]
+
+                i = eij[0]
+                j = eij[1]
+                k = ekl[0]
+                l = ekl[1]
+
+                # get edge vector
+                d0 = np.subtract(Y_0[i, :], Y_0[j, :])
+                d1 = np.subtract(Y1[k, :], Y1[l, :])
+
+                # C1 += (similarities[m] * np.sum(np.square(np.subtract(d0, d1)))/len(match_edges))  # output error without weignt
+                C1 += (match_edges[m] * np.sum(np.square(np.subtract(d0, d1))))
+                # print(np.sum(np.square(np.subtract(d0, d1))))
+                
+            C = C0 + _beta_ * C1
+            print("Iteration %d: KL error is %f, similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
+
+        # Stop lying about P-values
+        if iter == 100:
+            P1 = P1 / 4.
+            # _beta_ = _beta_ / 2.
+
+
+    # Return solution
+    return Y1
+
+def joint_tsne_point(Y_0=np.array([]), 
+                X_1=np.array([]),
+                Y_1_I = np.array([]), 
+                match_points = {},
+               no_dims=2,
+               initial_dims_1=50,
+               perplexity=30.0):
+   
+    beta_ = 0.01 # 0.01
+    """
+        Runs t-SNE on two datasets in the NxD array X to reduce its
+        dimensionality to no_dims dimensions. The syntaxis of the function is
+        `Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
+    """
+
+    # Check inputs
+    if isinstance(no_dims, float):
+        print("Error: array X should have type float.")
+        return -1
+    if round(no_dims) != no_dims:
+        print("Error: number of dimensions should be an integer.")
+        return -1
+
+    # Initialize variables
+    X_1 = pca(X_1, initial_dims_1).real
+
+    (n1, d1) = X_1.shape
+
+    max_iter = 2000
+    initial_momentum = 0.5
+    final_momentum = 0.8
+    # momentum
+    eta = 500
+    min_gain = 0.01
+
+    # Y1 = np.random.randn(n1, no_dims)
+    Y1 = Y_1_I
+    # dy1: gradient for data2
+    dY1 = np.zeros((n1, no_dims))     
+    iY1 = np.zeros((n1, no_dims))
+    gains1 = np.ones((n1, no_dims))
+
+    # 对称化
+    P1 = x2p(X_1, 1e-5, perplexity)
+    P1 = P1 + np.transpose(P1)
+    P1 = P1 / np.sum(P1)
+    # early exaggeration
+    _beta_ = beta_ * 2.
+    P1 = P1 * 4.
+    P1 = np.maximum(P1, 1e-12)
+
+    # Run iterations
+    for iter in range(max_iter):
+        # Compute pairwise affinities
+        sum_Y1 = np.sum(np.square(Y1), 1)
+        num1 = -2. * np.dot(Y1, Y1.T)
+        num1 = 1. / (1. + np.add(np.add(num1, sum_Y1).T, sum_Y1)) # qij分子 ????
+        num1[range(n1), range(n1)] = 0.
+        Q1 = num1 / np.sum(num1)  # qij
+        Q1 = np.maximum(Q1, 1e-12)
+
+        ''' 
+        Compute gradient
+        '''
+        PQ1 = P1 - Q1
+
+        for i in range(n1):
+            dY1[i, :] = np.sum(np.tile(PQ1[:, i] * num1[:, i], (no_dims, 1)).T * (Y1[i, :] - Y1), 0)  
+                # + penalty gradient
+            for (vi, vj) in match_points:
+                if i == vj:
+                    # print(vi, vj)
+                    dY1[i, :] -= (_beta_*match_points[(vi, vj)]*(Y_0[vi, :]-Y1[vj, :]) /len(match_points))                
+
+        #   if (vi, vj) in match_points:
+        #       dY1[i, :] -= (_beta_*match_points[(vi, vj)]*(Y_0[i, :]-Y1[i, :]) /len(match_points))
+        # Perform the update
+        if iter < 20:
+            momentum = initial_momentum
+        else:
+            momentum = final_momentum
+
+        gains1 = (gains1 + 0.2) * ((dY1 > 0.) != (iY1 > 0.)) + \
+            (gains1 * 0.8) * ((dY1 > 0.) == (iY1 > 0.))
+        gains1[gains1 < min_gain] = min_gain
+
+        # update momentum
+        # momentum is the 阻力
+        iY1 = momentum * iY1 - eta * (gains1 * dY1)
+
+        # update y
+        Y1 = Y1 + iY1
+
+        # subtract mean
+        Y1 = Y1 - np.tile(np.mean(Y1, 0), (n1, 1))
+
+        
+        ''' 
+        Compute current value of cost function
+        '''
+        if (iter + 1) % 10 == 0:
+            C0 = np.sum(P1 * np.log(P1 / Q1))
+            C1= 0
+            # + penalty term
+            for (vi, vj) in match_points:                # C1 += _beta_ * S[m] * np.sum(np.square(np.subtract(d0, d1)))
+                C1 += (match_points[(vi, vj)] * np.sum(np.square(np.subtract(Y_0[vi, :], Y1[vj, :])))/len(match_points))     # output error without weignt
+                
+                
+            C = C0 + _beta_ * C1
+            print("Iteration %d: KL error is %f, similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
+
+        # Stop lying about P-values
+        if iter == 100:
+            P1 = P1 / 4.
+            _beta_ = _beta_ / 2.
+
+
+    # Return solution
+    return Y1
 
 def joint_tsne(Y_0=np.array([]), 
                 X_1=np.array([]),
@@ -291,6 +607,9 @@ def joint_tsne(Y_0=np.array([]),
                no_dims=2,
                initial_dims_1=50,
                perplexity=30.0):
+    
+    beta_ = 0.01 # 0.01
+    gamma_ =  0.05# 0.05 0.1
     """
         Runs t-SNE on two datasets in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -472,27 +791,22 @@ def drawGraph_(data, edges, labels, keep_edges,
 
 def drawScatter(data, labels, 
                 keep_ids, edges, keep_edges,
-                fig_title, fig_minX, fig_maxX, fig_minY, fig_maxY):
-    dissimilar_ids = []
+                fig_title, fig_minX, fig_maxX, fig_minY, fig_maxY, 
+                bad_id):
+    # dissimilar_ids = []
     # dissimilar points
-    dissimilar_data = []
-    for i in range(data.shape[0]):
-        if i not in keep_ids:
-            dissimilar_ids.append(i)
-            dissimilar_data.append(data[i])
-    dissimilar_data = np.array(dissimilar_data)
-
-    # dissimilar edges
-    dissimilar_edges = []
-    for e in edges:
-        if e not in keep_edges:
-            dissimilar_edges.append(e)            
+    # dissimilar_data = []
+    # for i in range(data.shape[0]):
+    #     if i not in keep_ids:
+    #         # dissimilar_ids.append(i)
+    #         dissimilar_data.append(data[i])
+    # dissimilar_data = np.array(dissimilar_data)        
 
     # y0
     plt.figure()
     # plt.xlim(fig_minX, fig_maxX)
     # plt.ylim(fig_minY, fig_maxY)
-    plt.scatter(data[:, 0], data[:, 1], s = 72, c = labels0)#
+    plt.scatter(data[:, 0], data[:, 1], s = 72, c = labels)#
     plt.title(fig_title)
 
     # # 高亮不相似点
@@ -505,22 +819,24 @@ def drawScatter(data, labels,
     #     plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
     #     plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
 
-    # 高亮相似边
+    # 高亮公共边
     for e in keep_edges:
         plt.plot([data[e[0]][0], data[e[1]][0]], [data[e[0]][1], data[e[1]][1]], 'r')
+        # plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
+        # plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
 
-        plt.annotate(e[0], (data[e[0]][0], data[e[0]][1]))
-        plt.annotate(e[1], (data[e[1]][0], data[e[1]][1]))
-
-
-    # 标号不相似点
-    for i in dissimilar_ids:
+    # 标号并高亮锚点
+    for i in keep_ids:
+        plt.plot(data[i][0], data[i][1], 'ro')
         plt.annotate(str(i), (data[i][0], data[i][1]))
+
+    # 标号最不相似的点
+    plt.annotate(str(bad_id), (data[bad_id][0], data[bad_id][1]), color = 'r')
 
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
-    data_dim = 50
+    data_dim = 3
     data_size = 100
     data_id_0 = 0
     data_id_1 = 1
@@ -528,18 +844,65 @@ if __name__ == "__main__":
     ''' read high dimensioal data '''
     hdd0 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_0) 
     hdd1 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_1) 
-    esm = "../data/similarities/dim{}/size{}/similar_edges_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
-    psm = "../data/similarities/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
-    
+    # esm = "../data/similarities/dim{}/size{}/similar_edges_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
+    # psm = "../data/similarities/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
+    psm = "../data/qt_sim/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
+    D = point_wise_dist(X0, X1)
 
-    match_edges = read_match_edges(esm)    
+    distWeight = []
+    maxDist = np.max(D)
+    minDist = np.min(D)
+    for i in range(D.shape[0]):
+        if maxDist != minDist:
+            distWeight.append((maxDist - D[i])/(maxDist-minDist))
+        else:
+            # all point with the same 
+            distWeight.append(1)
+
+
+    # match_undirected_edges = read_match_edges(esm) 
+    ratios = common_neighbor_ratio(node_num = data_size, edges0 = edges0, edges1 = edges1, Neighbor_size=2)
+
+    ''' discount point similarity by neighborhood ratio '''
     match_points = read_match_points(psm)
-    # match_points = read_match_points("../data/qt_sim/similar_points_fm_0_fm_1.txt") # read from c++
+    for m in match_points:
+        match_points[m] *= ratios[m[0]]
 
-    anchor_points = select_anchor_point(match_points, rate = 1.0)
+    ''' weight each point by distance '''
+    for i in range(len(distWeight)):
+        match_points[(i, i)] *= distWeight[i]
+
+    # compute edge similarity based on point similarity
+    match_edges = find_match_edges(edges0 = edges0, edges1 = edges1, match_points  = match_points)
+
+ 
+    print("common neighbor ratios:")
+    print(ratios)
+    print(".......................")
+
+    print("points:")
+    print(match_points)
+    print(".......................")
+
+    print("common edges:")
+    print(match_edges)
+    print(".......................")
+
+
+    # select some points as anchor points
+    anchor_points = select_anchor_point(match_points, rate = 0.2)#0.2
+
+    # 找到分数最低的点
+    sim_scores_ = list(match_points.values())
+    points_ = list(match_points.keys())
+
+    rank_ = np.argsort(sim_scores_)
+    bad_id_= points_[rank_[0]][0]
+
+    
 
     ''' filter matching edges with anchor points'''
     anchor_points0 = []
@@ -548,25 +911,34 @@ if __name__ == "__main__":
         anchor_points0.append(m[0])
         anchor_points1.append(m[1])
 
-    anchor_edges = {}
-    for m in match_edges:
-        if m[0][0] not in anchor_points0 and m[0][1] not in anchor_points0  and m[1][0] not in anchor_points1 and m[1][1] not in anchor_points1:
-            anchor_edges[m] = match_edges[m]
+    # anchor_edges = {}
+    # for m in match_edges:
+    #     if m[0][0] not in anchor_points0 and m[0][1] not in anchor_points0  and m[1][0] not in anchor_points1 and m[1][1] not in anchor_points1:
+    #         anchor_edges[m] = match_edges[m]
+    # anchor_edges = match_edges
 
-    ''' first we apply t-sne to D0 '''
-    Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = data_dim, perplexity = 95.0)
-    ''' then we apply joint-tsne to D1 '''
-    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = anchor_points, match_edges=anchor_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = 95.0)
+    print("points:{}, anchor points:{}, common edges:{}".format(len(match_points), len(anchor_points), len(match_edges)))
+
+    perplexity = 20.0   #95.0
+
+    ''' joint t-sne test '''
+    print("t-sne to x0")
+    Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = data_dim, perplexity = perplexity)
+
+    print("joint t-sne using point and edge constraint to x1")
+    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = anchor_points, match_edges=match_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = perplexity)
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
-    ''' tsne to D1 comparison '''
-    Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = data_dim, perplexity = 95.0)
+    
 
-    # for m in anchor_points:
-    #     print(m)
+    print("joint t-sne using edge constraint to x1")
+    Y2 = joint_tsne_edge(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = perplexity)
 
-    # for m in anchor_edges:
-    #     print(m)
-    print("total matching points:{}, anchor points:{}, total matching edges:{}, anchor edges:{}".format(len(match_points), len(anchor_points), len(match_edges), len(anchor_edges)))
+    print("joint t-sne using point constraint to x1")
+    Y3 = joint_tsne_point(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_points = match_points, no_dims = 2, initial_dims_1 = data_dim, perplexity = perplexity)
+
+    print("t-sne to x1")
+    Y4, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = data_dim, perplexity = perplexity)    
+
 
     keep_ids0 = []
     keep_ids1 = []
@@ -578,17 +950,17 @@ if __name__ == "__main__":
     keep_edges0 = []
     keep_edges1 = []
     # for pair in match_edges:
-    for pair in anchor_edges:
+    for pair in match_edges:
         keep_edges0.append(pair[0])
         keep_edges1.append(pair[1])
 
     ''' compute the margins '''
     # min_x, max_x
-    minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0]), np.min(Y2[:, 0])])
-    maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0]), np.max(Y2[:, 0])])
+    minX = np.min([np.min(Y0[:, 0]), np.min(Y1[:, 0]), np.min(Y2[:, 0]),np.min(Y3[:, 0]),np.min(Y4[:, 0])])
+    maxX = np.max([np.max(Y0[:, 0]), np.max(Y1[:, 0]), np.max(Y2[:, 0]),np.max(Y3[:, 0]),np.max(Y4[:, 0])])
     # min_y, max_y
-    minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1]), np.min(Y2[:, 1])])
-    maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1]), np.max(Y2[:, 1])])
+    minY = np.min([np.min(Y0[:, 1]), np.min(Y1[:, 1]), np.min(Y2[:, 1]),np.min(Y3[:, 1]),np.min(Y4[:, 1])])
+    maxY = np.max([np.max(Y0[:, 1]), np.max(Y1[:, 1]), np.min(Y2[:, 1]),np.min(Y3[:, 1]),np.max(Y4[:, 1])])
 
     margin_ratio = 0.1
     margin_top = margin_bottom = (maxY - minY) * margin_ratio
@@ -631,7 +1003,7 @@ if __name__ == "__main__":
         # # nx.draw_networkx_nodes(..., ax=ax)
         # ax2.set(xlim = (minX, maxX), ylim = (minY, maxY))
         # ax2.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-        drawGraph_(data = Y2, edges = edges1, labels = labels1, keep_edges = keep_edges1,
+        drawGraph_(data = Y4, edges = edges1, labels = labels1, keep_edges = keep_edges1,
         fig_minX = minX,
         fig_maxX = maxX,
         fig_minY = minY, 
@@ -641,14 +1013,27 @@ if __name__ == "__main__":
     else:
         drawScatter(Y0, labels0, 
         keep_ids0, edges0, keep_edges0, 
-        "D0", minX, maxX, minY, maxY)  
+        "X0", minX, maxX, minY, maxY,
+        bad_id_)  
 
         drawScatter(Y1, labels1, 
         keep_ids1, edges1, keep_edges1, 
-        "D1 joint t-sne", minX, maxX, minY, maxY)
+        "X1 Point & Edge", minX, maxX, minY, maxY,
+        bad_id_)
 
         drawScatter(Y2, labels1, 
         keep_ids1, edges1, keep_edges1, 
-        "D1 t-sne", minX, maxX, minY, maxY) 
+        "X1 Edge", minX, maxX, minY, maxY,
+        bad_id_)
+
+        drawScatter(Y3, labels1, 
+        keep_ids1, edges1, keep_edges1, 
+        "X1 Point", minX, maxX, minY, maxY,
+        bad_id_)
+
+        drawScatter(Y4, labels1, 
+        keep_ids1, edges1, keep_edges1, 
+        "X1 t-sne", minX, maxX, minY, maxY,
+        bad_id_) 
 
         plt.show()

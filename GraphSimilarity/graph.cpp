@@ -1,5 +1,8 @@
 #include "graph.h"
 #include <QDebug>
+
+int glet_search_range = 10;                // user setting searching range
+
 Graph::Graph()
 {
 
@@ -73,18 +76,18 @@ void Graph::renderCurGraphLets(QPainter *painter)
     painter->setPen(QPen(QColor(255,0,0),3));
 
     painter->setBrush(QBrush(QColor(255,0,0)));
-    qDebug()<<"更新";
+//    qDebug()<<"更新";
     for(int i=0; i<m_cur_graphlets[cur_ID].size(); ++i)
     {
         int n0 = m_cur_graphlets[cur_ID][i].first;
-        qDebug()<<m_cur_graphlets[cur_ID][i].first;
+//        qDebug()<<m_cur_graphlets[cur_ID][i].first;
 
         painter->drawEllipse(QPoint(m_nodes[n0].x,m_nodes[n0].y),6,6);
 
         for(int t=0; t<m_cur_graphlets[cur_ID][i].second.size(); ++t)
         {
             int n2 = m_cur_graphlets[cur_ID][i].second[t];
-            qDebug() << " " << n2;
+//            qDebug() << " " << n2;
             painter->drawLine(m_nodes[n0].x,m_nodes[n0].y, m_nodes[n2].x, m_nodes[n2].y);
         }
     }
@@ -264,7 +267,12 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
     q.enqueue(tuple(0, sid));
 
     int llevel = 0;
-    QVector<QVector<GraphLet>> neighborGlets(ALL_GRAPHLET * MAX_SEARCH_RANGE);
+    QVector<QVector<GraphLet>> neighborGlets(ALL_GRAPHLET * glet_search_range);
+//    for (int i = 0; i < neighborGlets.size(); i++)
+//    {
+//        neighborGlets[i] = QVector<GraphLet>(); // create empty QVector
+//    }
+
     QVector<QVector<GraphLet>> cLevelGlets(ALL_GRAPHLET);
     // BFS, limited in neighbor size of MAX_SEARCH_RANGE
     while(!q.isEmpty())
@@ -286,7 +294,7 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
             }
 
             llevel = clevel;
-            if (clevel >= MAX_SEARCH_RANGE)
+            if (clevel >= glet_search_range)
             {
 //                qDebug() << "max level reached.";
                 break;
@@ -294,7 +302,7 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphlets(int sid)
         }
 
 
-        // accumulate graphlets found in this node
+        // accumulate graphlets found in this level
         QVector<QVector<GraphLet>> glets = GetGraphLets(cnode);
         for (int i = 0; i < glets.size(); i++)
         {
@@ -347,7 +355,7 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphletsAll(int sid)
         if (clevel != llevel)
         {
             llevel = clevel;
-            if (clevel >= MAX_SEARCH_RANGE)
+            if (clevel >= glet_search_range)
             {
 //                qDebug() << "max level reached.";
                 break;
@@ -386,19 +394,19 @@ QVector<QVector<GraphLet> > Graph::GetNeighborGraphletsAll(int sid)
 QVector<float> Graph::GetfeatureVector(int sid)
 {
     QVector<QVector<GraphLet> > neighborGlets = GetNeighborGraphlets(sid);
-    assert(neighborGlets.size() == ALL_GRAPHLET * MAX_SEARCH_RANGE);
+    assert(neighborGlets.size() == ALL_GRAPHLET * glet_search_range);
 
     // De-duplicate each graphlet type
     for (int i = 0; i < neighborGlets.size(); i++)
     {
-        qDebug() << "removing neighborhood:" << i/ALL_GRAPHLET << " graphlet type:" << i%ALL_GRAPHLET;
+//        qDebug() << "removing neighborhood:" << i/ALL_GRAPHLET << " graphlet type:" << i%ALL_GRAPHLET;
         DedupGraphLets(neighborGlets[i]);
     }
     //
 
     // compute GFD for each level
-    QVector<float> featureVector(ALL_GRAPHLET * MAX_SEARCH_RANGE);
-    for (int i = 0; i < MAX_SEARCH_RANGE; i++)
+    QVector<float> featureVector(ALL_GRAPHLET * glet_search_range);
+    for (int i = 0; i < glet_search_range; i++)
     {
 
         GFD gfd(ALL_GRAPHLET);
@@ -408,10 +416,15 @@ QVector<float> Graph::GetfeatureVector(int sid)
             gfd[j] = neighborGlets[i*ALL_GRAPHLET + j].size();
             count += neighborGlets[i*ALL_GRAPHLET + j].size();
         }
-        for (int j = 0; j < gfd.size(); j++)
+
+        if (count != 0)
         {
-            gfd[j] /= (float)count;
+            for (int j = 0; j < gfd.size(); j++)
+            {
+                gfd[j] /= (float)count;
+            }
         }
+
         // concat
         std::copy(gfd.begin(), gfd.end(), featureVector.begin() + i*ALL_GRAPHLET);
     }
@@ -438,9 +451,20 @@ QVector<float> Graph::GetfeatureVectorAll(int sid)
         gfd[i] = neighborGlets[i].size();
         count += neighborGlets[i].size();
     }
-    for (int i = 0; i < gfd.size(); i++)
+
+//    QString str;
+//    for (int i = 0; i < gfd.size(); i++)
+//    {
+//        str += QString::number(gfd[i]) + ", ";
+//    }
+//    qDebug()<< str;
+
+    if (count != 0)
     {
-        gfd[i] /= (float)count;
+        for (int i = 0; i < gfd.size(); i++)
+        {
+            gfd[i] /= (float)count;
+        }
     }
     return gfd;
 }
@@ -612,10 +636,10 @@ QVector<GraphLet> Graph::SearchGraphLet4(int sid)
             int n2 = t1->childs[k];
             if(n2 == n0)
                 continue;
-            for(int m=k+1; m<t1->childs.size(); ++m)
+            for(int m=0; m<t1->childs.size(); ++m)
             {
                 int n3 = t1->childs[m];
-                if(n3 == n0)
+                if(n3 == n0 || n3 == n2)
                     continue;
                 GraphLet tmp;
                 GraphLetNode m0,m1,m2,m3;
@@ -802,7 +826,7 @@ QVector<GraphLet> Graph::SearchGraphLet7(int sid)
                 for(int n=0; n<t3->childs.size(); ++n)
                 {
                     int n4 = t3->childs[n];
-                    for (int j = n+1; j<t3->childs.size(); ++j) {
+                    for (int j = 0; j<t3->childs.size(); ++j) {
                         int n5 = t3->childs[j];
                         if (n4 == n0 && n5 == n1)
                         {
@@ -846,7 +870,9 @@ QVector<GraphLet> Graph::SearchGraphLet7(int sid)
 
 QVector<GraphLet> Graph::SearchGraphLet8(int sid)
 {
-    // g1: n0->n1, n1->n2, n2->n0, n2->n3, n3->n0, n3->n1
+    // g8: n0->n1, n1->n2, n2->n0,
+    // n2->n3,
+    // n3->n0, n3->n1
     QVector<GraphLet> glets;
 
     int n0 = sid;
@@ -857,25 +883,26 @@ QVector<GraphLet> Graph::SearchGraphLet8(int sid)
         int n1 = t0->childs[i];
         Node* t1 = GetNode(n1);
 
-        for(int k=0; k<t1->childs.size(); ++k)
+        for(int j=0; j<t1->childs.size(); ++j)
         {
-            int n2 = t1->childs[k];
+            int n2 = t1->childs[j];
             if (n2 == n0)
                 continue;
 
             Node* t2 = GetNode(n2);
-            for (int m=0; m < t2->childs.size(); ++m) {
-                int n3 = t2->childs[m];
-
-                if(n3 == n0) {
-                    for (int n = m+1; n < t2->childs.size(); ++n) {
-                        n3 = t2->childs[n];
+            for (int k=0; k < t2->childs.size(); ++k) {
+                int n3 = t2->childs[k];
+                if(n3 == n0) {  // A loop
+                    for (int m = 0; m < t2->childs.size(); ++m) {
+                        n3 = t2->childs[m];
+                        if (n3 == n0 || n3 == n1)
+                            continue;
 
                         Node* t3 = GetNode(n3);
-                        for (int j = 0; j < t3->childs.size(); ++j) {
-                            for (int jj=j+1; jj < t3->childs.size(); ++jj) {
-                                int n4 = t3->childs[j];
-                                int n5 = t3->childs[jj];
+                        for (int n = 0; n < t3->childs.size(); ++n) {
+                            for (int o = 0; o < t3->childs.size(); ++o) {
+                                int n4 = t3->childs[n];
+                                int n5 = t3->childs[o];
                                 if (n4 == n0 && n5 == n1) {
                                     GraphLet tmp;
                                     GraphLetNode m0,m1,m2, m3;
@@ -1006,10 +1033,10 @@ QVector<GraphLet> Graph::SearchGraphLet10(int sid)
                 if(n3 == n0 || n3 == n1)
                     continue;
 
-                for(int m=k+1; m<t2->childs.size(); ++m)
+                for(int m=0; m<t2->childs.size(); ++m)
                 {
                     int n4 = t2->childs[m];
-                    if(n4 == n0 || n4 == n1)
+                    if(n4 == n0 || n4 == n1 || n4 == n3)
                         continue;
 
                     GraphLet tmp;
@@ -1057,19 +1084,19 @@ QVector<GraphLet> Graph::SearchGraphLet11(int sid)
     {
         int n1 = t0->childs[i];
 
-        for (int j = i+1; j<t0->childs.size(); ++j) {
+        for (int j = 0; j<t0->childs.size(); ++j) {
             int n2 = t0->childs[j];
-            if (n2 == n0)
+            if (n2 == n0 || n2 == n1)
                 continue;
 
-            for (int k = j+1; k < t0->childs.size(); ++k) {
+            for (int k = 0; k < t0->childs.size(); ++k) {
                 int n3 = t0->childs[k];
-                if (n3 == n0 || n3 == n1)
+                if (n3 == n0 || n3 == n1 || n3 == n2)
                     continue;
 
-                for (int m = k+1; m < t0->childs.size(); ++m) {
+                for (int m = 0; m < t0->childs.size(); ++m) {
                     int n4 = t0->childs[m];
-                    if (n4 == n0 || n4 == n1 || n4 == n2)
+                    if (n4 == n0 || n4 == n1 || n4 == n2 || n4 == n3)
                         continue;
 
                     GraphLet tmp;
@@ -1259,7 +1286,8 @@ QVector<GraphLet> Graph::SearchGraphLet13(int sid)
 
 QVector<GraphLet> Graph::SearchGraphLet14(int sid)
 {
-    // g4: n0->n1, n1->n2, n1->n3, n2->n3
+    // g4: n0->n1, n1->n2, n2->n3, n3->n1
+    // n1 -> n4
     QVector<GraphLet> glets;
 
     int n0 = sid;   //
@@ -1289,11 +1317,11 @@ QVector<GraphLet> Graph::SearchGraphLet14(int sid)
                     int n4 = t3->childs[m];
                     if (n4 == n1)
                     {
-                        for (int n = j+1; n<t1->childs.size(); ++n)
+                        for (int n = 0; n<t1->childs.size(); ++n)
                         {
                             // n1's next child
                             n4 = t1->childs[n];
-                            if (n4 == n0 || n4 == n3)
+                            if (n4 == n0 || n4 == n2 || n4 == n3)
                                 continue;
 
                             GraphLet tmp;
@@ -1524,7 +1552,7 @@ QVector<GraphLet> Graph::SearchGraphLet17(int sid)
                         if (n5 == n1)
                         {
                             // Find n3
-                            for (int o = j+1; o < t1->childs.size(); ++o)
+                            for (int o = 0; o < t1->childs.size(); ++o)
                             {
                                 n5 = t1->childs[o];
                                 if (n5 == n3)
@@ -1602,11 +1630,11 @@ QVector<GraphLet> Graph::SearchGraphLet18(int sid)
                     int n4 = t3->childs[m];
                     if (n4 == n1)
                     {
-                        for (int n = j+1; n<t1->childs.size(); ++n)
+                        for (int n = 0; n<t1->childs.size(); ++n)
                         {
                             // n1's next child
                             n4 = t1->childs[n];
-                            if (n4 == n0 || n4 == n3)
+                            if (n4 == n0 || n4 == n3 || n4 == n2)
                                 continue;
 
                             Node* t4 = GetNode(n4);
@@ -1696,7 +1724,7 @@ QVector<GraphLet> Graph::SearchGraphLet19(int sid)
                         int n5 = t4->childs[n];
                         if (n5 == n1)
                         {
-                            for (int o = k+1; o < t2->childs.size(); ++o)
+                            for (int o = 0; o < t2->childs.size(); ++o)
                             {
                                 n5 = t2->childs[o];
                                 if (n5 == n4)
@@ -1775,10 +1803,10 @@ QVector<GraphLet> Graph::SearchGraphLet20(int sid)
                     int n4 = t3->childs[m];
                     if (n4 == n0)
                     {
-                        for (int n = i+1; n < t0->childs.size(); ++n)
+                        for (int n = 0; n < t0->childs.size(); ++n)
                         {
                             n4 = t0->childs[n];
-                            if (n4 == n2 || n4 == n3)
+                            if (n4 == n1 || n4 == n2 || n4 == n3)
                                 continue;
 
                             Node* t4 = GetNode(n4);
@@ -2230,17 +2258,17 @@ QVector<GraphLet> Graph::SearchGraphLet25(int sid)
                     int n4 = t3->childs[m];
                     if (n4 == n0)
                     {// A loop
-                        for (int n = i+1; n < t0->childs.size(); ++n)
+                        for (int n = 0; n < t0->childs.size(); ++n)
                         {
                             n4 = t0->childs[n];
-                            if (n4 == n2 || n4 == n3)
+                            if (n4 == n1 || n4 == n2 || n4 == n3)
                                 continue;
 
                             Node* t4 = GetNode(n4);
                             for (int o = 0; o < t4->childs.size(); ++o)
                             {
                                 int n5 = t4->childs[o];
-                                for (int p = o+1; p < t4->childs.size(); ++p)
+                                for (int p = 0; p < t4->childs.size(); ++p)
                                 {
                                     int n6 = t4->childs[p];
                                     if (n5==n1 && n6==n3)
@@ -2431,20 +2459,20 @@ QVector<GraphLet> Graph::SearchGraphLet27(int sid)
                     int n4 = t3->childs[m];
                     if (n4 == n0)
                     {// A loop
-                        for (int n = i+1; n < t0->childs.size(); ++n)
+                        for (int n = 0; n < t0->childs.size(); ++n)
                         {
                             n4 = t0->childs[n];
-                            if (n4 == n2 || n4 == n3)
+                            if (n4 == n1 || n4 == n2 || n4 == n3)
                                 continue;
 
                             Node* t4 = GetNode(n4);
                             for (int o = 0; o < t4->childs.size(); ++o)
                             {
                                 int n5 = t4->childs[o];
-                                for (int p = o+1; p < t4->childs.size(); ++p)
+                                for (int p = 0; p < t4->childs.size(); ++p)
                                 {
                                     int n6 = t4->childs[p];
-                                    for (int q = p+1; q < t4->childs.size(); ++q)
+                                    for (int q = 0; q < t4->childs.size(); ++q)
                                     {
                                         int n7 = t4->childs[q];
                                         if (n5==n1 && n6==n2 && n7==n3)
@@ -2652,15 +2680,15 @@ QVector<GraphLet> Graph::SearchGraphLet29(int sid)
                     for (int n = 0; n<t4->childs.size(); ++n) {
                         int n5 = t4->childs[n];
                         if (n5 == n0) { // A loop
-                            for (int o = i+1; o < t0->childs.size(); ++o)
+                            for (int o = 0; o < t0->childs.size(); ++o)
                             {
-                                for (int p = o+1; p < t0->childs.size(); ++p)
+                                for (int p = 0; p < t0->childs.size(); ++p)
                                 {
-                                    for (int q = j+1; q < t1->childs.size(); ++q)
+                                    for (int q = 0; q < t1->childs.size(); ++q)
                                     {
-                                        for (int r = q+1; r < t1->childs.size(); ++r)
+                                        for (int r = 0; r < t1->childs.size(); ++r)
                                         {
-                                            for (int s = k+1; s < t2->childs.size(); ++s)
+                                            for (int s = 0; s < t2->childs.size(); ++s)
                                             {
                                                 if (t0->childs[o] == n2 &&
                                                         t0->childs[p] == n3&&
@@ -2774,10 +2802,10 @@ void Graph::DedupGraphLets(QVector<GraphLet> &allGraphlets)
     // remove last
     int total = allGraphlets.size();
 
-    if (total - n != 0)
-    {
-        qDebug() << "remove duplicate: " << total - n;
-    }
+//    if (total - n != 0)
+//    {
+//        qDebug() << "remove duplicate: " << total - n;
+//    }
 
     for (int i = n; i < total; i++)
     {

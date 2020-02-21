@@ -30,6 +30,9 @@ public:
     double scale;
     double m_horAngle,m_verAngle;  // theta alpha
 
+signals:
+    void drawLabel(const QVector<QPair<int, QVector2D>>& labelPos);
+
 protected:
     void initializeGL();
     void resizeGL(int w, int h);

@@ -11,6 +11,9 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+
+extern int glet_search_range;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -19,7 +22,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    Widget* m_widget;
+//    Widget* m_widget_0;
+//    Widget* m_widget_1;
+
 
 private slots:
     void slot_openGraph();
@@ -52,6 +57,8 @@ private slots:
     MatchEdgeList calcEdgeSims(Graph& g1, Graph& g2, const QVector<float>& pointSims);
 
     void on_btnLoadFmData_clicked();
+
+    void on_comboSearchRange_activated(int index);
 
 private:
     Ui::MainWindow *ui;

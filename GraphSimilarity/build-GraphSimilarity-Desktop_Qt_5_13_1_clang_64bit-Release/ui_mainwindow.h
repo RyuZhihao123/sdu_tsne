@@ -13,12 +13,15 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QComboBox>
 #include <QtWidgets/QGroupBox>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <widget.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -26,18 +29,25 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
+    QVBoxLayout *verticalLayout;
     QGroupBox *groupBox;
-    QPushButton *btnOpen;
-    QPushButton *btnSave;
-    QComboBox *comboBox;
-    QPushButton *btnNext;
-    QPushButton *btnCalculate;
-    QLabel *graphletId;
-    QPushButton *btnGen;
-    QPushButton *btnClear;
-    QPushButton *btnGFD;
-    QPushButton *btnSim;
+    QHBoxLayout *horizontalLayout_2;
     QPushButton *btnLoadFmData;
+    QPushButton *btnSim;
+    QPushButton *btnGFD;
+    QPushButton *btnClear;
+    QPushButton *btnGen;
+    QPushButton *btnCalculate;
+    QPushButton *btnNext;
+    QComboBox *comboBox;
+    QPushButton *btnSave;
+    QPushButton *btnOpen;
+    QLabel *graphletId;
+    QComboBox *comboSearchRange;
+    QWidget *container;
+    QHBoxLayout *horizontalLayout;
+    Widget *m_widget_0;
+    Widget *m_widget_1;
     QComboBox *fileListBox;
     QMenuBar *menubar;
     QStatusBar *statusbar;
@@ -49,45 +59,100 @@ public:
         MainWindow->resize(800, 600);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
+        verticalLayout = new QVBoxLayout(centralwidget);
+        verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         groupBox = new QGroupBox(centralwidget);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        groupBox->setGeometry(QRect(590, 10, 120, 411));
-        btnOpen = new QPushButton(groupBox);
-        btnOpen->setObjectName(QString::fromUtf8("btnOpen"));
-        btnOpen->setGeometry(QRect(0, 20, 112, 32));
-        btnSave = new QPushButton(groupBox);
-        btnSave->setObjectName(QString::fromUtf8("btnSave"));
-        btnSave->setGeometry(QRect(0, 50, 112, 32));
-        comboBox = new QComboBox(groupBox);
-        comboBox->setObjectName(QString::fromUtf8("comboBox"));
-        comboBox->setGeometry(QRect(0, 290, 111, 32));
-        btnNext = new QPushButton(groupBox);
-        btnNext->setObjectName(QString::fromUtf8("btnNext"));
-        btnNext->setGeometry(QRect(0, 350, 112, 32));
-        btnCalculate = new QPushButton(groupBox);
-        btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
-        btnCalculate->setGeometry(QRect(0, 320, 112, 32));
-        graphletId = new QLabel(groupBox);
-        graphletId->setObjectName(QString::fromUtf8("graphletId"));
-        graphletId->setGeometry(QRect(10, 380, 101, 20));
-        btnGen = new QPushButton(groupBox);
-        btnGen->setObjectName(QString::fromUtf8("btnGen"));
-        btnGen->setGeometry(QRect(0, 80, 112, 32));
-        btnClear = new QPushButton(groupBox);
-        btnClear->setObjectName(QString::fromUtf8("btnClear"));
-        btnClear->setGeometry(QRect(0, 110, 112, 32));
-        btnGFD = new QPushButton(groupBox);
-        btnGFD->setObjectName(QString::fromUtf8("btnGFD"));
-        btnGFD->setGeometry(QRect(0, 260, 112, 32));
-        btnSim = new QPushButton(groupBox);
-        btnSim->setObjectName(QString::fromUtf8("btnSim"));
-        btnSim->setGeometry(QRect(0, 210, 112, 32));
+        horizontalLayout_2 = new QHBoxLayout(groupBox);
+        horizontalLayout_2->setSpacing(0);
+        horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         btnLoadFmData = new QPushButton(groupBox);
         btnLoadFmData->setObjectName(QString::fromUtf8("btnLoadFmData"));
-        btnLoadFmData->setGeometry(QRect(0, 180, 112, 32));
+
+        horizontalLayout_2->addWidget(btnLoadFmData);
+
+        btnSim = new QPushButton(groupBox);
+        btnSim->setObjectName(QString::fromUtf8("btnSim"));
+
+        horizontalLayout_2->addWidget(btnSim);
+
+        btnGFD = new QPushButton(groupBox);
+        btnGFD->setObjectName(QString::fromUtf8("btnGFD"));
+
+        horizontalLayout_2->addWidget(btnGFD);
+
+        btnClear = new QPushButton(groupBox);
+        btnClear->setObjectName(QString::fromUtf8("btnClear"));
+
+        horizontalLayout_2->addWidget(btnClear);
+
+        btnGen = new QPushButton(groupBox);
+        btnGen->setObjectName(QString::fromUtf8("btnGen"));
+
+        horizontalLayout_2->addWidget(btnGen);
+
+        btnCalculate = new QPushButton(groupBox);
+        btnCalculate->setObjectName(QString::fromUtf8("btnCalculate"));
+
+        horizontalLayout_2->addWidget(btnCalculate);
+
+        btnNext = new QPushButton(groupBox);
+        btnNext->setObjectName(QString::fromUtf8("btnNext"));
+
+        horizontalLayout_2->addWidget(btnNext);
+
+        comboBox = new QComboBox(groupBox);
+        comboBox->setObjectName(QString::fromUtf8("comboBox"));
+
+        horizontalLayout_2->addWidget(comboBox);
+
+        btnSave = new QPushButton(groupBox);
+        btnSave->setObjectName(QString::fromUtf8("btnSave"));
+
+        horizontalLayout_2->addWidget(btnSave);
+
+        btnOpen = new QPushButton(groupBox);
+        btnOpen->setObjectName(QString::fromUtf8("btnOpen"));
+
+        horizontalLayout_2->addWidget(btnOpen);
+
+        graphletId = new QLabel(groupBox);
+        graphletId->setObjectName(QString::fromUtf8("graphletId"));
+
+        horizontalLayout_2->addWidget(graphletId);
+
+
+        verticalLayout->addWidget(groupBox);
+
+        comboSearchRange = new QComboBox(centralwidget);
+        comboSearchRange->setObjectName(QString::fromUtf8("comboSearchRange"));
+
+        verticalLayout->addWidget(comboSearchRange);
+
+        container = new QWidget(centralwidget);
+        container->setObjectName(QString::fromUtf8("container"));
+        horizontalLayout = new QHBoxLayout(container);
+        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
+        horizontalLayout->setContentsMargins(0, 0, 0, 0);
+        m_widget_0 = new Widget(container);
+        m_widget_0->setObjectName(QString::fromUtf8("m_widget_0"));
+
+        horizontalLayout->addWidget(m_widget_0);
+
+        m_widget_1 = new Widget(container);
+        m_widget_1->setObjectName(QString::fromUtf8("m_widget_1"));
+
+        horizontalLayout->addWidget(m_widget_1);
+
+
+        verticalLayout->addWidget(container);
+
         fileListBox = new QComboBox(centralwidget);
         fileListBox->setObjectName(QString::fromUtf8("fileListBox"));
-        fileListBox->setGeometry(QRect(400, 480, 311, 32));
+
+        verticalLayout->addWidget(fileListBox);
+
+        verticalLayout->setStretch(2, 20);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -106,16 +171,16 @@ public:
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "GroupBox", nullptr));
-        btnOpen->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
-        btnSave->setText(QCoreApplication::translate("MainWindow", "Save", nullptr));
-        btnNext->setText(QCoreApplication::translate("MainWindow", "Next", nullptr));
-        btnCalculate->setText(QCoreApplication::translate("MainWindow", "Search", nullptr));
-        graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
-        btnGen->setText(QCoreApplication::translate("MainWindow", "Generate", nullptr));
-        btnClear->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
+        btnLoadFmData->setText(QCoreApplication::translate("MainWindow", "load fm data", nullptr));
+        btnSim->setText(QCoreApplication::translate("MainWindow", "Similarity", nullptr));
         btnGFD->setText(QCoreApplication::translate("MainWindow", "GFD", nullptr));
-        btnSim->setText(QCoreApplication::translate("MainWindow", "\347\233\270\344\274\274\345\272\246\350\256\241\347\256\227", nullptr));
-        btnLoadFmData->setText(QCoreApplication::translate("MainWindow", "\350\275\275\345\205\245fm\346\225\260\346\215\256", nullptr));
+        btnClear->setText(QCoreApplication::translate("MainWindow", "Clear", nullptr));
+        btnGen->setText(QCoreApplication::translate("MainWindow", "Generate", nullptr));
+        btnCalculate->setText(QCoreApplication::translate("MainWindow", "Search", nullptr));
+        btnNext->setText(QCoreApplication::translate("MainWindow", "Next", nullptr));
+        btnSave->setText(QCoreApplication::translate("MainWindow", "Save", nullptr));
+        btnOpen->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
+        graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
     } // retranslateUi
 
 };

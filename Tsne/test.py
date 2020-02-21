@@ -38,9 +38,10 @@ import networkx as nx
 # print(arr1*arr2)# bit mul
 # print(np.dot(arr1, arr2))# dot product
 
-a = {}
-a[0] = 1
-a[1] = 2
-a[3] = 4
-print(len(a))
+a = [3, 2, 1, 9, 8]
+rank = np.argsort(a)
+
+print(rank)
+print(a)
+
 # print(np.sum(np.square(np.subtract(d0, d1))))

@@ -58,6 +58,10 @@ float ObjLoader::loadPtsFromPly(const QString &pathObj)
     float maxz = -100000.0f;
 
     m_nodes.clear();
+    m_vertices.clear();
+    m_colors.clear();
+    data.clear();
+    data_1.clear();
 
     // process TRUNCK
     while(!ts.atEnd())
@@ -140,10 +144,6 @@ float ObjLoader::loadPtsFromPly(const QString &pathObj)
             data_1.push_back(m_vertices[m_nodes[i].indices[t]].z());
         }
     }
-
-    // clear vector data
-    m_vertices.clear();
-    m_colors.clear();
 
     return _max(_max((maxy-miny),(maxz-minz)),(maxx-minx));
 }

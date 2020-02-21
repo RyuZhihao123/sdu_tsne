@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QLabel>
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QScrollBar>
@@ -31,8 +32,11 @@ private slots:
     void loadNewFile();
     void slot_cbxhistories();
 
+    void UpdateLabels(const QVector<QPair<int, QVector2D>>& labelPos);
+
 private:
     Ui::MainWindow *ui;
+    QVector<QLabel*> m_labels;
 };
 
 #endif // MAINWINDOW_H

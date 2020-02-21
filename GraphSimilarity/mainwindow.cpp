@@ -10,8 +10,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     for(int i=0; i<ALL_GRAPHLET; ++i)
     {
-        ui->comboBox->addItem(QString("Graph:%1").arg(i+1));
+        ui->comboBox->addItem(QString("Graphlet:%1").arg(i+1));
     }
+    for (int i = 0; i < MAX_SEARCH_RANGE; i++) {
+        ui->comboSearchRange->addItem(QString("neighborhood:%1").arg(i+1));
+    }
+    ui->comboSearchRange->setCurrentIndex(glet_search_range-1);
+
     //    ui->comboBox->setCurrentIndex(19);
 
     connect(ui->btnOpen, SIGNAL(clicked(bool)), this, SLOT(slot_openGraph()));
@@ -20,7 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnCalculate,SIGNAL(clicked(bool)),this,SLOT(slot_calculateGraphLet()));
     connect(ui->btnNext,SIGNAL(clicked(bool)),this,SLOT(slot_btnNext()));
 
-    m_widget = new Widget(ui->centralwidget);
+//    ui->m_widget_0 = new Widget(ui->centralwidget);
+//    m_widget_1 = new Widget(ui->centralwidget);
 
     m_filenames.clear();
 }
@@ -74,8 +80,8 @@ void MainWindow::slot_openGraph()
         line = in.readLine();
     }
 
-    m_widget->m_graph = g;
-    m_widget->update();
+    ui->m_widget_0->m_graph = g;
+    ui->m_widget_0->update();
 }
 
 void MainWindow::slot_saveGraph()
@@ -99,12 +105,12 @@ void MainWindow::slot_saveGraph()
 
         QString str;
         // Store positions of nodes
-        for (int i = 0; i < m_widget->m_graph.nodeNum(); i++)
+        for (int i = 0; i < ui->m_widget_0->m_graph.nodeNum(); i++)
         {
             str += QString::number(i);
             str += " ";
 
-            Node* s = m_widget->m_graph.GetNode(i);
+            Node* s = ui->m_widget_0->m_graph.GetNode(i);
             str += QString("%1").arg(s->x);
             str += " ";
 
@@ -116,12 +122,12 @@ void MainWindow::slot_saveGraph()
         str += "#\n";
 
         // edges of the graph
-        for (int i = 0; i < m_widget->m_graph.nodeNum(); i++)
+        for (int i = 0; i < ui->m_widget_0->m_graph.nodeNum(); i++)
         {
             str += QString::number(i);
             str += " ";
 
-            Node* s = m_widget->m_graph.GetNode(i);
+            Node* s = ui->m_widget_0->m_graph.GetNode(i);
             for (int j = 0; j < s->childs.size(); j++)
             {
                 str += QString::number(s->childs[j]);
@@ -138,15 +144,15 @@ void MainWindow::slot_saveGraph()
 
 void MainWindow::slot_calculateGraphLet()  // 点击计算按钮
 {
-    m_widget->m_graph.GetGraphletFromGraph(m_graphlet_id);
+    ui->m_widget_0->m_graph.GetGraphletFromGraph(m_graphlet_id);
 }
 
 void MainWindow::slot_btnNext()
 {
-    m_widget->m_graph.ShowNextGraphlet();
-    m_widget->update();
+    ui->m_widget_0->m_graph.ShowNextGraphlet();
+    ui->m_widget_0->update();
 
-    ui->graphletId->setText("graphlet:" + QString::number(m_widget->m_graph.cur_ID));
+    ui->graphletId->setText("graphlet:" + QString::number(ui->m_widget_0->m_graph.cur_ID));
 }
 
 MainWindow::~MainWindow()
@@ -157,15 +163,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_btnGen_clicked()
 {
-    m_widget->m_graph = genGraph(500, 499);//(200, 1000) cost 0-100ms
-    m_widget->update();
+    ui->m_widget_0->m_graph = genGraph(500, 499);//(200, 1000) cost 0-100ms
+    ui->m_widget_0->update();
 }
 
 Graph MainWindow::genGraph(int nodeNum, int edgeNum)
 {
     Graph g;
-    int maxWidth = m_widget->width();
-    int maxHeight = m_widget->height();
+    int maxWidth = ui->m_widget_0->width();
+    int maxHeight = ui->m_widget_0->height();
 
     srand(time(0));
     // Random nodes
@@ -194,8 +200,8 @@ void MainWindow::on_comboBox_activated(int index)
 
 void MainWindow::on_btnClear_clicked()
 {
-    m_widget->m_graph.clear();
-    m_widget->update();
+    ui->m_widget_0->m_graph.clear();
+    ui->m_widget_0->update();
 }
 
 void MainWindow::on_btnGFD_clicked()
@@ -203,12 +209,14 @@ void MainWindow::on_btnGFD_clicked()
     // For test
     int sid = 0;
 
-    QVector<float> v =m_widget->m_graph.GetfeatureVector(sid);
-    qDebug() << "Feature vector:";
-    for (int i = 0; i < v.size(); i++)
+    QVector<float> gfd =ui->m_widget_0->m_graph.GetfeatureVectorAll(sid);
+
+    QString str;
+    for (int i = 0; i < gfd.size(); i++)
     {
-        qDebug() << v[i] << " ";
+        str += QString::number(gfd[i]) + ", ";
     }
+    qDebug()<< str;
 }
 
 Graph MainWindow::read_fm_data(const QString& fileName)
@@ -235,6 +243,7 @@ Graph MainWindow::read_fm_data(const QString& fileName)
 
         if(line[0][0] == "G")  // 接下来要读取Graph Adjacency List;
             break;
+
 
         g.addNode(Node());
     }
@@ -273,7 +282,7 @@ void MainWindow::savePointSims(const QVector<float> &matchScores, const QString 
         QTextStream textStream(&file);
         for (int i = 0; i < matchScores.size(); i++)
         {
-            qDebug() << "save: " << i << ", " << i << ", " << matchScores[i];
+//            qDebug() << "save: " << i << ", " << i << ", " << matchScores[i];
             textStream << QString::number(i);
             textStream << "\t";
             textStream << QString::number(i);
@@ -283,6 +292,8 @@ void MainWindow::savePointSims(const QVector<float> &matchScores, const QString 
         }
         file.close();
     }
+
+    qDebug() << "save file: " << fileName << " successful.";
 }
 
 void MainWindow::saveEdgeSims(const MatchEdgeList &matchEdges, const QString &fileName)
@@ -312,29 +323,56 @@ void MainWindow::saveEdgeSims(const MatchEdgeList &matchEdges, const QString &fi
         }
         file.close();
     }
+    qDebug() << "save file: " << fileName << " successful.";
 }
 
 void MainWindow::on_btnSim_clicked()
 {
     //    QStringList filenames = QFileDialog::getOpenFileNames(this,"Open two graphs","/Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/", "text file(*.txt)");
     //    assert(filenames.size() == 2);
+    QString fileName0, fileName1;
+    fileName0 = m_filenames[m_filenames.size()-2];
+    fileName1 = m_filenames[m_filenames.size()-1];
+
     // Pick the last two files
-    Graph g0 = read_fm_data(m_filenames[m_filenames.size()-2]);
-    Graph g1 = read_fm_data(m_filenames[m_filenames.size()-1]);
+    Graph g0 = read_fm_data(fileName0);
+    Graph g1 = read_fm_data(fileName1);
+
+    //
+//    QVector<QVector<GraphLet>> vi_1 = g0.GetGraphLets(4);
+//    QVector<QVector<GraphLet>> vi_2 = g1.GetGraphLets(4);
 
     QVector<float> pointSims = calcPointSims(g0, g1);
-    MatchEdgeList matchEdges = calcEdgeSims(g0, g1,pointSims);
+    // we leave it to python to compute edge similarity
+//    MatchEdgeList matchEdges = calcEdgeSims(g0, g1,pointSims);
 
-    QString baseName0 = QFileInfo(m_filenames[m_filenames.size()-2]).baseName();
-    QString baseName1 = QFileInfo(m_filenames[m_filenames.size()-1]).baseName();
+    QFileInfo finfo0(fileName0);
+    QFileInfo finfo1(fileName1);
 
-    int d0 = (baseName0.split("_")[1]).toInt();
-    int d1 = (baseName1.split("_")[1]).toInt();
+    QStringList dirList0 = finfo0.dir().path().split("/");
+    QStringList dirList1 = finfo1.dir().path().split("/");
 
+    // /Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/dim3/size100/2nn
+    QString knn = dirList0[dirList0.size()-1];
+    QString sizem = dirList0[dirList0.size()-2];
+    QString dimn = dirList0[dirList0.size()-3];
+
+    int d0 = (finfo0.baseName().split("_")[1]).toInt();
+    int d1 = (finfo1.baseName().split("_")[1]).toInt();
+
+    QString dir = QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/%1/%2/%3/").arg(dimn).arg(sizem).arg(knn);
+    QDir fileDir(dir);
+    if (!fileDir.exists())
+    {
+        fileDir.mkpath(dir);
+    }
+
+    qDebug() << fileDir.path();
     savePointSims(pointSims,
-             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_points_%1_%1.txt").arg(d0, d1));
-    saveEdgeSims(matchEdges,
-             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_edges_%1_%1.txt").arg(d0, d1));
+             (fileDir.path() + "/similar_points_%1_%2.txt").arg(d0).arg(d1));
+
+//    saveEdgeSims(matchEdges,
+//             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_edges_%1_%2.txt").arg(d0).arg(d1));
 }
 
 QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
@@ -343,8 +381,9 @@ QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
 
     for (int i = 0; i < g1.nodeNum(); i++)
     {
-        QVector<float> vi_1 = g1.GetfeatureVectorAll(i);
-        QVector<float> vi_2 = g2.GetfeatureVectorAll(i);
+        QVector<float> vi_1 = g1.GetfeatureVector(i);
+        QVector<float> vi_2 = g2.GetfeatureVector(i);
+
 
         float sum = 0.f;
         float len1 = 0.f, len2 = 0.f;
@@ -360,7 +399,13 @@ QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
         len1 = sqrtf(len1);
         len2 = sqrtf(len2);
 
-        float s = sum / (len1 * len2);
+        float s = 0;
+        if (len1 != 0 && len2 != 0)
+        {
+            s = sum / (len1 * len2);
+        }
+
+        qDebug() <<  i << ": " << s;
         matchScores.push_back(s);
     }
 
@@ -391,4 +436,10 @@ void MainWindow::on_btnLoadFmData_clicked()
     m_filenames.push_back(fileName);
 
     ui->fileListBox->addItem(fileName);
+}
+
+void MainWindow::on_comboSearchRange_activated(int index)
+{
+    glet_search_range = index + 1;
+    qDebug() << "set searching range: " << glet_search_range;
 }

@@ -51,7 +51,7 @@ def DisturbPoints(inputs, keep_ratio=0.7):
     return output, keep_ids
 
 
-def DisturbClusters(inputs, labels, disturb_label, keep_ratio=0.7):
+def DisturbClusters(inputs, labels, disturb_label):
     output = inputs
     np.arange(0, points.shape[0])
     ids = range(0, config.pts_size)
@@ -113,6 +113,20 @@ def DisturbPointSets(inputs, labels, disturb_label_num, keep_ratio= 0.7):
 
     return output, keep_ids
 
+
+
+def shiftAllPoints(inputs):
+    if config.HARD_MOVE_ == True:
+        _moveVec = np.tile(config.distrub_dist_, config.dim)*random.sample([-1, 1], 1)[0]
+    else:
+        _moveVec = np.random.uniform(-config.distrub_dist_, config.distrub_dist_, (config.dim))
+
+    output = inputs
+    for i in range(output.shape[0]):
+        output[i] += _moveVec
+
+    # no keeping id
+    return output, []
 
 # # Amplify the cluster
 # def DiffuseCluster(inputs, labels, disturb_label):
@@ -236,10 +250,10 @@ if __name__ == '__main__':
     for layer in range(1, 10):
         print("当前处理: " + str(layer) + " Graph")
 
-        # 扰动前一个点集的某一个类簇
-        # cur_points, keep_ids = DisturbPoints(points, keep_ratio = keep_ratio_)
-        # cur_points, keep_ids = DisturbClusters(points, labels, disturb_label = random.randint(0, config.num_clusters-1),  keep_ratio = config.keep_ratio)
-        cur_points, keep_ids = DisturbPointSets(points, labels, disturb_label_num = 2, keep_ratio = config.keep_ratio)
+        # cur_points, keep_ids = shiftAllPoints(points)
+        # cur_points, keep_ids = DisturbPoints(points, keep_ratio=config.keep_ratio)
+        cur_points, keep_ids = DisturbClusters(points, labels, disturb_label = random.randint(0, config.num_clusters-1))
+        # cur_points, keep_ids = DisturbPointSets(points, labels, disturb_label_num = 2, keep_ratio = config.keep_ratio)
         # 构建新的KNN图
         tree_1 = KDTree(cur_points)
         dists_1, indices_1 = tree_1.query(cur_points, k=config.k_closest_count)
@@ -301,12 +315,24 @@ if __name__ == '__main__':
             file.write(str(i) + "\t" + str(j) + "\t" + str(i) + "\t" + str(j) + "\t1.0\n")
         file.close()
 
-        ''' store similar points '''
+        ''' store all points and similarities'''
         file = open(config.dir_similarity + "similar_points_{}_{}.txt".format(layer - 1, layer), 'w')
-        for i in keep_ids:
-            # default similarity is 1
-            file.write(str(i) + "\t" + str(i) + "\t1.0\n")
+        for i in range(config.pts_size):
+            if i in keep_ids:
+                # keeping point is 1
+                file.write(str(i) + "\t" + str(i) + "\t1.0\n")
+            else:
+                # distrubbed point is 0
+                file.write(str(i) + "\t" + str(i) + "\t0.0\n")
         file.close()
+
+        # ''' store dissimilar points '''
+        # file = open(config.dir_similarity + "dissimilar_points_{}_{}.txt".format(layer - 1, layer), 'w')
+        # for i in range(config.pts_size):
+        #     if i not in keep_ids:
+        #         # default similarity is 1
+        #         file.write(str(i) + "\t" + str(i) + "\t0.0\n")
+        # file.close()
 
 
         

@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     this->m_glwiget = new GLWidget(ui->centralWidget);
+//    m_glwiget->setAutoFillBackground(true);
 
     // Note that: Change here to set up your own window title
     this->setWindowTitle("RyuZhihao123");
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->BtnViewing,SIGNAL(clicked(bool)),this,SLOT(StartViewingTimer()));
 
     connect(m_glwiget,SIGNAL(sig_cameraPose(float,float,float)),this,SLOT(UpdateCameraPose(float,float,float)));
+    connect(m_glwiget, SIGNAL(drawLabel(const QVector<QPair<int, QVector2D>>&)),this, SLOT(UpdateLabels(const QVector<QPair<int, QVector2D>>&)));
 
     connect(ui->spinDist,SIGNAL(valueChanged(double)),this,SLOT(UpdateParameters()));
     connect(ui->spinHor,SIGNAL(valueChanged(double)),this,SLOT(UpdateParameters()));
@@ -101,6 +103,30 @@ void MainWindow::slot_cbxhistories()
     m_glwiget->m_objloader->BuildPtsVBO();
     m_glwiget->m_objloader->BuildLineVBO();
     m_glwiget->update();
+}
+
+void MainWindow::UpdateLabels(const QVector<QPair<int, QVector2D> > &labelPos)
+{
+//    qDebug() << "update labels";
+    for(int i=0; i<m_labels.size(); ++i)
+    {
+        m_labels[i]->close();
+        delete m_labels[i];
+    }
+    m_labels.clear();
+    for (int i = 0; i < labelPos.size(); i++)
+    {
+        int label = labelPos[i].first;
+        QVector2D pos = labelPos[i].second;
+
+        QLabel *pointLabel = new QLabel(m_glwiget);
+        pointLabel->setFont(QFont("New Times Roman", 15));
+        pointLabel->setStyleSheet("QLabel{color:#FF0000;}");
+        pointLabel->setText(QString::number(label));
+        pointLabel->move(pos.x(), pos.y());
+        pointLabel->show();
+        m_labels.push_back(pointLabel);
+    }
 }
 
 MainWindow::~MainWindow()

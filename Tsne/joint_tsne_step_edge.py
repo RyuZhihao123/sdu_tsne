@@ -281,7 +281,7 @@ def tsne(X=np.array([]), Y_I = np.array([]), no_dims=2, initial_dims=50, perplex
     return Y, Y_1_I
 
 
-def joint_tsne(Y_0=np.array([]), 
+def joint_tsne_edge(Y_0=np.array([]), 
                 X_1=np.array([]),
                 Y_1_I = np.array([]), 
                 match_edges = {},
@@ -586,7 +586,7 @@ if __name__ == "__main__":
     ''' first we apply t-sne to D0 '''
     Y0, Y_1_I = tsne(X = X0, no_dims = 2, initial_dims = data_dim, perplexity = 95.0)
     ''' then we apply joint-tsne to D1 '''
-    Y1 = joint_tsne(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = 95.0)
+    Y1 = joint_tsne_edge(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = 95.0)
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     ''' tsne to D1 comparison '''
     Y2, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = data_dim, perplexity = 95.0)

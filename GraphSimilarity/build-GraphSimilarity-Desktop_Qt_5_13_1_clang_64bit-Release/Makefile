@@ -776,7 +776,21 @@ compiler_uic_make_all: ui_mainwindow.h ui_widget.h
 compiler_uic_clean:
 	-$(DEL_FILE) ui_mainwindow.h ui_widget.h
 ui_mainwindow.h: ../mainwindow.ui \
-		/Users/joe/Qt/5.13.1/clang_64/bin/uic
+		/Users/joe/Qt/5.13.1/clang_64/bin/uic \
+		../widget.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/QWidget \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtWidgets.framework/Headers/qwidget.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/QMouseEvent \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qevent.h \
+		../graph.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QVector \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qvector.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/QPainter \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtGui.framework/Headers/qpainter.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QQueue \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qqueue.h \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/QTime \
+		/Users/joe/Qt/5.13.1/clang_64/lib/QtCore.framework/Headers/qdatetime.h
 	/Users/joe/Qt/5.13.1/clang_64/bin/uic ../mainwindow.ui -o ui_mainwindow.h
 
 ui_widget.h: ../widget.ui \
