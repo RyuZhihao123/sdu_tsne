@@ -25,8 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->btnCalculate,SIGNAL(clicked(bool)),this,SLOT(slot_calculateGraphLet()));
     connect(ui->btnNext,SIGNAL(clicked(bool)),this,SLOT(slot_btnNext()));
 
-//    ui->m_widget_0 = new Widget(ui->centralwidget);
-//    m_widget_1 = new Widget(ui->centralwidget);
+    //    ui->m_widget_0 = new Widget(ui->centralwidget);
+    //    m_widget_1 = new Widget(ui->centralwidget);
 
     m_filenames.clear();
 }
@@ -282,7 +282,7 @@ void MainWindow::savePointSims(const QVector<float> &matchScores, const QString 
         QTextStream textStream(&file);
         for (int i = 0; i < matchScores.size(); i++)
         {
-//            qDebug() << "save: " << i << ", " << i << ", " << matchScores[i];
+            //            qDebug() << "save: " << i << ", " << i << ", " << matchScores[i];
             textStream << QString::number(i);
             textStream << "\t";
             textStream << QString::number(i);
@@ -339,12 +339,12 @@ void MainWindow::on_btnSim_clicked()
     Graph g1 = read_fm_data(fileName1);
 
     //
-//    QVector<QVector<GraphLet>> vi_1 = g0.GetGraphLets(4);
-//    QVector<QVector<GraphLet>> vi_2 = g1.GetGraphLets(4);
+    //    QVector<QVector<GraphLet>> vi_1 = g0.GetGraphLets(4);
+    //    QVector<QVector<GraphLet>> vi_2 = g1.GetGraphLets(4);
 
     QVector<float> pointSims = calcPointSims(g0, g1);
     // we leave it to python to compute edge similarity
-//    MatchEdgeList matchEdges = calcEdgeSims(g0, g1,pointSims);
+    //    MatchEdgeList matchEdges = calcEdgeSims(g0, g1,pointSims);
 
     QFileInfo finfo0(fileName0);
     QFileInfo finfo1(fileName1);
@@ -369,10 +369,10 @@ void MainWindow::on_btnSim_clicked()
 
     qDebug() << fileDir.path();
     savePointSims(pointSims,
-             (fileDir.path() + "/similar_points_%1_%2.txt").arg(d0).arg(d1));
+                  (fileDir.path() + "/similar_points_%1_%2.txt").arg(d0).arg(d1));
 
-//    saveEdgeSims(matchEdges,
-//             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_edges_%1_%2.txt").arg(d0).arg(d1));
+    //    saveEdgeSims(matchEdges,
+    //             QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/similar_edges_%1_%2.txt").arg(d0).arg(d1));
 }
 
 QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
@@ -383,27 +383,7 @@ QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
     {
         QVector<float> vi_1 = g1.GetfeatureVector(i);
         QVector<float> vi_2 = g2.GetfeatureVector(i);
-
-
-        float sum = 0.f;
-        float len1 = 0.f, len2 = 0.f;
-        for(int k = 0; k < vi_1.size(); k++)
-        {
-            // dot product bewteen v1 and v2
-            sum += vi_1[k]*vi_2[k];
-            // dot product bewteen v1 and v1
-            len1 += vi_1[k]*vi_1[k];
-            // dot product bewteen v2 and v2
-            len2 += vi_2[k]*vi_2[k];
-        }
-        len1 = sqrtf(len1);
-        len2 = sqrtf(len2);
-
-        float s = 0;
-        if (len1 != 0 && len2 != 0)
-        {
-            s = sum / (len1 * len2);
-        }
+        float s = applyKernel(vi_1, vi_2, m_kernel);
 
         qDebug() <<  i << ": " << s;
         matchScores.push_back(s);
@@ -442,4 +422,86 @@ void MainWindow::on_comboSearchRange_activated(int index)
 {
     glet_search_range = index + 1;
     qDebug() << "set searching range: " << glet_search_range;
+}
+
+void MainWindow::on_cbxKernel_activated(int index)
+{
+    m_kernel = KernelFunc(index);
+    qDebug() << "set kernel function: " << m_kernel << " " << ui->cbxKernel->itemText(index);
+}
+
+float MainWindow::applyKernel(const QVector<float> &vec1, const QVector<float> &vec2, KernelFunc func)
+{
+    assert(vec1.size() == vec2.size());
+    switch (func) {
+    case COS:
+        return cosine(vec1, vec2);
+    case RBF:
+        return rbf(vec1, vec2);
+    case LAPLACIAN:
+        return laplacian(vec1, vec2);
+//    default:
+//        return cosine(vec1, vec2);
+    }
+}
+
+float MainWindow::cosine(const QVector<float> &vec1, const QVector<float> &vec2)
+{
+    float sum = 0.f;
+    float len1 = 0.f, len2 = 0.f;
+    for(int k = 0; k < vec1.size(); k++)
+    {
+        // dot product bewteen v1 and v2
+        sum += vec1[k]*vec2[k];
+        // dot product bewteen v1 and v1
+        len1 += vec1[k]*vec1[k];
+        // dot product bewteen v2 and v2
+        len2 += vec2[k]*vec2[k];
+    }
+    len1 = sqrtf(len1);
+    len2 = sqrtf(len2);
+
+    float s = 0;
+    if (len1 != 0 && len2 != 0)
+    {
+        s = sum / (len1 * len2);
+    }
+
+    return s;
+}
+
+float MainWindow::rbf(const QVector<float> &vec1, const QVector<float> &vec2, float delta)
+{
+    //
+    return exp(-L2Distance(vec1, vec2)/(2*delta*delta));
+
+}
+
+float MainWindow::laplacian(const QVector<float> &vec1, const QVector<float> &vec2, float delta)
+{
+    return exp(-L1Distance(vec1, vec2)/delta);
+}
+
+float MainWindow::L1Distance(const QVector<float> &vec1, const QVector<float> &vec2)
+{
+    int size = vec1.size();
+
+    float sum = 0.f;
+    for (int i = 0; i < size; i++)
+    {
+        sum += fabs(vec1[i]-vec2[i]);
+    }
+    return sum;
+}
+
+float MainWindow::L2Distance(const QVector<float> &vec1, const QVector<float> &vec2)
+{
+    int size = vec1.size();
+
+    float sum = 0.f;
+    for (int i = 0; i < size; i++)
+    {
+        sum += (vec1[i]-vec2[i])*(vec1[i]-vec2[i]);
+    }
+    return sum;
 }

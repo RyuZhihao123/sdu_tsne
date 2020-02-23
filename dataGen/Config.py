@@ -5,7 +5,7 @@ class Configuration:
     pts_size = 100  # 图中总共点的数量
     keep_ratio = 0.9
     # Hyper parameters
-    k_closest_count = 6  # K近邻的个数+1（虽然是K=4，但由于包含自身，实际为K-1邻近）
+    k_closest_count = 3  # K近邻的个数+1（虽然是K=4，但由于包含自身，实际为K-1邻近）
     dim = 3              # 点的纬度
     num_clusters = 5     # 聚类的数量（尽量是config.pts_size的倍数） 
     gauss_delta_ = 1.0

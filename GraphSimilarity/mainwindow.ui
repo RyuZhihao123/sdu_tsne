@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,20,0">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,20,0">
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
@@ -98,6 +98,25 @@
         </widget>
        </item>
       </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="cbxKernel">
+      <item>
+       <property name="text">
+        <string>Cosine Similarity</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>RBF</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Laplacian</string>
+       </property>
+      </item>
      </widget>
     </item>
     <item>

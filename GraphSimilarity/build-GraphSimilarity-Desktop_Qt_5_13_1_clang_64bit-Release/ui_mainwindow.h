@@ -43,6 +43,7 @@ public:
     QPushButton *btnSave;
     QPushButton *btnOpen;
     QLabel *graphletId;
+    QComboBox *cbxKernel;
     QComboBox *comboSearchRange;
     QWidget *container;
     QHBoxLayout *horizontalLayout;
@@ -124,6 +125,14 @@ public:
 
         verticalLayout->addWidget(groupBox);
 
+        cbxKernel = new QComboBox(centralwidget);
+        cbxKernel->addItem(QString());
+        cbxKernel->addItem(QString());
+        cbxKernel->addItem(QString());
+        cbxKernel->setObjectName(QString::fromUtf8("cbxKernel"));
+
+        verticalLayout->addWidget(cbxKernel);
+
         comboSearchRange = new QComboBox(centralwidget);
         comboSearchRange->setObjectName(QString::fromUtf8("comboSearchRange"));
 
@@ -152,7 +161,7 @@ public:
 
         verticalLayout->addWidget(fileListBox);
 
-        verticalLayout->setStretch(2, 20);
+        verticalLayout->setStretch(3, 20);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -181,6 +190,10 @@ public:
         btnSave->setText(QCoreApplication::translate("MainWindow", "Save", nullptr));
         btnOpen->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
         graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
+        cbxKernel->setItemText(0, QCoreApplication::translate("MainWindow", "Cosine Similarity", nullptr));
+        cbxKernel->setItemText(1, QCoreApplication::translate("MainWindow", "RBF", nullptr));
+        cbxKernel->setItemText(2, QCoreApplication::translate("MainWindow", "Laplacian", nullptr));
+
     } // retranslateUi
 
 };

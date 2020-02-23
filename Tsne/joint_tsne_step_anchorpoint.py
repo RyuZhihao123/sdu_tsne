@@ -13,11 +13,67 @@
 #  Copyright (c) 2008 Tilburg University. All rights reserved.
 
 import os
+import time
 import numpy as np
 import pylab
 import matplotlib.pyplot as plt
 import networkx as nx
 
+def joint_probabilities_nn(distances, desired_perplexity, verbose):
+    """Compute joint probabilities p_ij from distances using just nearest
+    neighbors.
+
+    This method is approximately equal to _joint_probabilities. The latter
+    is O(N), but limiting the joint probability to nearest neighbors improves
+    this substantially to O(uN).
+
+    Parameters
+    ----------
+    distances : CSR sparse matrix, shape (n_samples, n_samples)
+        Distances of samples to its n_neighbors nearest neighbors. All other
+        distances are left to zero (and are not materialized in memory).
+
+    desired_perplexity : float
+        Desired perplexity of the joint probability distributions.
+
+    verbose : int
+        Verbosity level.
+
+    Returns
+    -------
+    P : csr sparse matrix, shape (n_samples, n_samples)
+        Condensed joint probability matrix with only nearest neighbors.
+    """
+    t0 = time()
+    # Compute conditional probabilities such that they approximately match
+    # the desired perplexity
+    distances.sort_indices()
+    n_samples = distances.shape[0]
+    distances_data = distances.data.reshape(n_samples, -1)
+    distances_data = distances_data.astype(np.float32, copy=False)
+    P = x2p(
+        distances_data, verbose, desired_perplexity)
+    assert np.all(np.isfinite(P)), \
+        "All probabilities should be finite"
+
+    # Symmetrize the joint probability distribution using sparse operations
+    P = P + np.transpose(P)
+    # P = P / np.sum(P)
+    # P = csr_matrix((conditional_P.ravel(), distances.indices,
+    #                 distances.indptr),
+    #                shape=(n_samples, n_samples))
+    # P = P + P.T
+
+    # Normalize the joint probability distribution
+    sum_P = np.maximum(P.sum(), 1e-12)
+    P /= sum_P
+
+    # assert np.all(np.abs(P.data) <= 1.0)
+    if verbose >= 2:
+        duration = time() - t0
+        print("[t-SNE] Computed conditional probabilities in {:.3f}s"
+              .format(duration))
+    return P
 
 
 def read_fm_data(filepath):
@@ -94,27 +150,6 @@ def point_wise_dist(X0, X1):
 
     return D
 
-# def read_match_edges(filepath):
-#     match_edges = {}
-#     with open(filepath, 'r', encoding='utf-8') as f:
-#         for line in f:
-#             line=line.strip('\n')
-#             items = line.split()
-#             match_edges[((int(items[0]), int(items[1])), 
-#             (int(items[2]), int(items[3])))] = float(items[4])
-
-#     return match_edges
-
-
-# def find_match_edges(edges0, edges1, match_undirected_edges):
-#     match_edges = {}
-#     for e0 in edges0:
-#         for e1 in edges1:
-#             if e0 == e1:
-#                 match_edges[(e0, e1)] = match_undirected_edges[(e0, e1)]
-
-#     return match_edges
-
 
 def find_match_edges(edges0, edges1, match_points):
     match_edges = {}
@@ -124,7 +159,6 @@ def find_match_edges(edges0, edges1, match_points):
                 match_edges[(e0, e1)] = match_points[(e0[0], e0[0])]*match_points[(e0[1], e0[1])] # compute edge similarity using point similarity
 
     return match_edges
-
 
 
 def select_anchor_point(match_points, rate = 0.15):
@@ -468,7 +502,7 @@ def joint_tsne_edge(Y_0=np.array([]),
                 # print(np.sum(np.square(np.subtract(d0, d1))))
                 
             C = C0 + _beta_ * C1
-            print("Iteration %d: KL error is %f, similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
+            print("Iteration %d: KL error is %f, edge similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
 
         # Stop lying about P-values
         if iter == 100:
@@ -588,7 +622,7 @@ def joint_tsne_point(Y_0=np.array([]),
                 
                 
             C = C0 + _beta_ * C1
-            print("Iteration %d: KL error is %f, similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
+            print("Iteration %d: KL error is %f, point similarity error is %f, total error is %f" % (iter + 1, C0, C1, C))
 
         # Stop lying about P-values
         if iter == 100:
@@ -609,7 +643,7 @@ def joint_tsne(Y_0=np.array([]),
                perplexity=30.0):
     
     beta_ = 0.01 # 0.01
-    gamma_ =  0.05# 0.05 0.1
+    gamma_ =  0.005# 0.05 0.1
     """
         Runs t-SNE on two datasets in the NxD array X to reduce its
         dimensionality to no_dims dimensions. The syntaxis of the function is
@@ -643,14 +677,19 @@ def joint_tsne(Y_0=np.array([]),
     iY1 = np.zeros((n1, no_dims))
     gains1 = np.ones((n1, no_dims))
 
-    # 对称化
-    P1 = x2p(X_1, 1e-5, perplexity)
-    P1 = P1 + np.transpose(P1)
-    P1 = P1 / np.sum(P1)
-    # early exaggeration
-    # _beta_ = beta_ * 2.
-    P1 = P1 * 4.
-    P1 = np.maximum(P1, 1e-12)
+    # # 对称化
+    # P1 = x2p(X_1, 1e-5, perplexity)
+    # P1 = P1 + np.transpose(P1)
+    # P1 = P1 / np.sum(P1)
+    # # early exaggeration
+    # # _beta_ = beta_ * 2.
+    # P1 = P1 * 4.
+    # P1 = np.maximum(P1, 1e-12)
+
+    # use knn to estimate joint probability
+    distances = cal_pairwise_dist(X_1)
+    P1 = joint_probabilities_nn(distances, perplexity, verbose)
+
 
     # Run iterations
     for iter in range(max_iter):
@@ -792,7 +831,7 @@ def drawGraph_(data, edges, labels, keep_edges,
 def drawScatter(data, labels, 
                 keep_ids, edges, keep_edges,
                 fig_title, fig_minX, fig_maxX, fig_minY, fig_maxY, 
-                bad_id):
+                bad_ids):
     # dissimilar_ids = []
     # dissimilar points
     # dissimilar_data = []
@@ -828,25 +867,29 @@ def drawScatter(data, labels,
     # 标号并高亮锚点
     for i in keep_ids:
         plt.plot(data[i][0], data[i][1], 'ro')
+        # plt.annotate(str(i), (data[i][0], data[i][1]))
+
+    # 黑色显示最不相似的点
+    for i in bad_ids:
+        plt.plot(data[i][0], data[i][1], 'ko')
         plt.annotate(str(i), (data[i][0], data[i][1]))
 
-    # 标号最不相似的点
-    plt.annotate(str(bad_id), (data[bad_id][0], data[bad_id][1]), color = 'r')
 
 if __name__ == "__main__":
     print("Joint-tsne step running test.")
     
     data_dim = 3
     data_size = 100
+    data_knn = 4
     data_id_0 = 0
     data_id_1 = 1
 
     ''' read high dimensioal data '''
-    hdd0 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_0) 
-    hdd1 = "../data/highdims/dim{}/size{}/fm_{}.txt".format(data_dim, data_size, data_id_1) 
+    hdd0 = "../data/highdims/dim{}/size{}/{}nn/fm_{}.txt".format(data_dim, data_size, data_knn, data_id_0) 
+    hdd1 = "../data/highdims/dim{}/size{}/{}nn/fm_{}.txt".format(data_dim, data_size, data_knn, data_id_1) 
     # esm = "../data/similarities/dim{}/size{}/similar_edges_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
     # psm = "../data/similarities/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
-    psm = "../data/qt_sim/dim{}/size{}/similar_points_{}_{}.txt".format(data_dim, data_size, data_id_0, data_id_1) 
+    psm = "../data/qt_sim/dim{}/size{}/{}nn/similar_points_{}_{}.txt".format(data_dim, data_size, data_knn, data_id_0, data_id_1) 
 
     X0, labels0, edges0 = read_fm_data(hdd0)
     X1, labels1, edges1 = read_fm_data(hdd1)
@@ -864,16 +907,16 @@ if __name__ == "__main__":
 
 
     # match_undirected_edges = read_match_edges(esm) 
-    ratios = common_neighbor_ratio(node_num = data_size, edges0 = edges0, edges1 = edges1, Neighbor_size=2)
+    ratios = common_neighbor_ratio(node_num = data_size, edges0 = edges0, edges1 = edges1, Neighbor_size=data_knn)
 
     ''' discount point similarity by neighborhood ratio '''
     match_points = read_match_points(psm)
     for m in match_points:
         match_points[m] *= ratios[m[0]]
 
-    ''' weight each point by distance '''
-    for i in range(len(distWeight)):
-        match_points[(i, i)] *= distWeight[i]
+    # ''' weight each point by distance '''
+    # for i in range(len(distWeight)):
+    #     match_points[(i, i)] *= distWeight[i]
 
     # compute edge similarity based on point similarity
     match_edges = find_match_edges(edges0 = edges0, edges1 = edges1, match_points  = match_points)
@@ -893,14 +936,17 @@ if __name__ == "__main__":
 
 
     # select some points as anchor points
-    anchor_points = select_anchor_point(match_points, rate = 0.2)#0.2
+    anchor_points = select_anchor_point(match_points, rate = 0.5)#0.2
 
-    # 找到分数最低的点
+    # 找到分数最低的一些点
     sim_scores_ = list(match_points.values())
     points_ = list(match_points.keys())
-
     rank_ = np.argsort(sim_scores_)
-    bad_id_= points_[rank_[0]][0]
+    bad_ids= []
+    for r in rank_[:int(len(rank_)*0.2)]:
+        bad_ids.append(points_[r][0])
+    # for p in points_[]:
+    #     .append(p[0])
 
     
 
@@ -930,7 +976,7 @@ if __name__ == "__main__":
     # Y1, dump = tsne(X = X1, Y_I = Y_1_I, no_dims = 2, initial_dims = 3, perplexity = 20.0)
     
 
-    print("joint t-sne using edge constraint to x1")
+    # print("joint t-sne using edge constraint to x1")
     Y2 = joint_tsne_edge(Y_0 = Y0, Y_1_I = Y_1_I, X_1 = X1, match_edges = match_edges, no_dims = 2, initial_dims_1 = data_dim, perplexity = perplexity)
 
     print("joint t-sne using point constraint to x1")
@@ -1014,26 +1060,26 @@ if __name__ == "__main__":
         drawScatter(Y0, labels0, 
         keep_ids0, edges0, keep_edges0, 
         "X0", minX, maxX, minY, maxY,
-        bad_id_)  
+        bad_ids)  
 
         drawScatter(Y1, labels1, 
         keep_ids1, edges1, keep_edges1, 
         "X1 Point & Edge", minX, maxX, minY, maxY,
-        bad_id_)
+        bad_ids)
 
         drawScatter(Y2, labels1, 
         keep_ids1, edges1, keep_edges1, 
         "X1 Edge", minX, maxX, minY, maxY,
-        bad_id_)
+        bad_ids)
 
         drawScatter(Y3, labels1, 
         keep_ids1, edges1, keep_edges1, 
         "X1 Point", minX, maxX, minY, maxY,
-        bad_id_)
+        bad_ids)
 
         drawScatter(Y4, labels1, 
         keep_ids1, edges1, keep_edges1, 
         "X1 t-sne", minX, maxX, minY, maxY,
-        bad_id_) 
+        bad_ids) 
 
         plt.show()
