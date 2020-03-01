@@ -27,7 +27,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->BtnViewing,SIGNAL(clicked(bool)),this,SLOT(StartViewingTimer()));
 
     connect(m_glwiget,SIGNAL(sig_cameraPose(float,float,float)),this,SLOT(UpdateCameraPose(float,float,float)));
+
+#ifdef DRAW_LABEL
     connect(m_glwiget, SIGNAL(drawLabel(const QVector<QPair<int, QVector2D>>&)),this, SLOT(UpdateLabels(const QVector<QPair<int, QVector2D>>&)));
+#endif
 
     connect(ui->spinDist,SIGNAL(valueChanged(double)),this,SLOT(UpdateParameters()));
     connect(ui->spinHor,SIGNAL(valueChanged(double)),this,SLOT(UpdateParameters()));

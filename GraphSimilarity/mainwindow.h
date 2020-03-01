@@ -58,9 +58,11 @@ private slots:
 
     void on_btnLoadFmData_clicked();
 
-    void on_comboSearchRange_activated(int index);
+    void on_cbxRange_activated(int index);
 
     void on_cbxKernel_activated(int index);
+
+    void on_cbxGFDCalc_activated(int index);
 
 private:
     Ui::MainWindow *ui;
@@ -71,6 +73,11 @@ private:
         RBF,
         LAPLACIAN
     } m_kernel = COS;
+
+    enum GFDCalc{
+        ACCUM,
+        CONCAT
+    } m_gfd_cal = CONCAT;
 
     float applyKernel(const QVector<float>& vec1, const QVector<float>& vec2, KernelFunc func);
 

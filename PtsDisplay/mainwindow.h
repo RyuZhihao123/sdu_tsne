@@ -7,6 +7,8 @@
 #include <QScrollBar>
 #include "glwidget.h"
 
+//#define DRAW_LABEL
+
 namespace Ui {
 class MainWindow;
 }

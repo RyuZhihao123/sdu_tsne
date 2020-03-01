@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>842</width>
     <height>600</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,20,0">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,20,0">
     <item>
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
@@ -101,6 +101,20 @@
      </widget>
     </item>
     <item>
+     <widget class="QComboBox" name="cbxGFDCalc">
+      <item>
+       <property name="text">
+        <string>Accumulate</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Concatenate</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item>
      <widget class="QComboBox" name="cbxKernel">
       <item>
        <property name="text">
@@ -120,7 +134,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QComboBox" name="comboSearchRange"/>
+     <widget class="QComboBox" name="cbxRange"/>
     </item>
     <item>
      <widget class="QWidget" name="container" native="true">
@@ -156,7 +170,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>842</width>
      <height>22</height>
     </rect>
    </property>

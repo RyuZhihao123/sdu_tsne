@@ -1,6 +1,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 #define MAX_SEARCH_RANGE 30
+//#define STACK_GFD           // determine whether stack different levels of gfd
 #define ALL_GRAPHLET    29
 
 #include <QVector>

@@ -3,6 +3,13 @@ import numpy as np
 import pylab
 import matplotlib.pyplot as plt
 import networkx as nx
+import matplotlib.pylab as pl
+from matplotlib.colors import ListedColormap
+import sklearn
+from sklearn import datasets
+
+
+sklearn.datasets.fetch_olivetti_faces()
 
 # n = 3
 
@@ -38,10 +45,44 @@ import networkx as nx
 # print(arr1*arr2)# bit mul
 # print(np.dot(arr1, arr2))# dot product
 
-a = [3, 2, 1, 9, 8]
-rank = np.argsort(a)
+# a = [3, 2, 1, 9, 8]
+# rank = np.argsort(a)
 
-print(rank)
-print(a)
+# cmap = pl.cm.RdBu
+# print(cmap)
+
+# # Get the colormap colors
+# my_cmap = cmap(np.arange(cmap.N))
+# print(my_cmap)
+
+# # Create new colormap
+# my_cmap = ListedColormap(my_cmap)
+# print(my_cmap)
+
+
+# a = {0:1, 2:3}
+# print(np.max(a.values()))
+
+# print(a)
 
 # print(np.sum(np.square(np.subtract(d0, d1))))
+
+
+
+
+# a = ["1", "2", "3", "4", "5"]
+# b = [[6, 7, 8],
+#       [1, 2, 3]
+#     ]
+
+# b = np.array(b)
+# a += b
+
+X = np.array([5, 2, 3])
+
+X_min = np.min(X)
+X_max = np.max(X)
+X = (X - X_min)/(X_max - X_min)
+
+# print(b[0:])
+print(X)

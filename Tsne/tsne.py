@@ -156,7 +156,7 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
     # Initialize variables
     X = pca(X, initial_dims).real
     (n, d) = X.shape
-    max_iter = 1000
+    max_iter = 1500
     initial_momentum = 0.5
     final_momentum = 0.8
     eta = 500
@@ -218,11 +218,23 @@ def tsne(X=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0):
 if __name__ == "__main__":
     print("Run Y = tsne.tsne(X, no_dims, perplexity) to perform t-SNE on your dataset.")
     print("Running example on 2,500 MNIST digits...")
-    X = np.loadtxt("../data/meshlab/off/bunny/reconstruction/bun_zipper_res4_2.xyz")
-    labels = [0 for i in range(X.shape[0])] 
-    # labels = np.loadtxt("./data/test_labels_3_4.txt")
-    # X, labels = read_ply("../data/meshlab/off/bunny/reconstruction/bun_zipper_res4.ply")
 
-    Y = tsne(X, 2, 3, 90.0)
+    data_label_path = "/Users/joe/Codes/QtProjects/t-sne for comparison/data/DailySports/fm_raw_2.txt"
+    data_dim = 45
+    # /Users/joe/Codes/QtProjects/t-sne for comparison/data/Stock/fm_3.txt
+    # /Users/joe/Codes/QtProjects/t-sne for comparison/data/DailySports/output/fm_raw_0.txt
+    X = np.loadtxt(data_label_path, usecols = np.arange(0,data_dim))
+
+    X_min = np.min(X)
+    X_max = np.max(X)
+    X = (X - X_min)/(X_max - X_min)
+
+    labels = np.loadtxt(data_label_path, usecols = (data_dim,))
+
+
+    # X = D[:[:-2]]   # 0 - n-1 col
+    # labels = D[:-1]# last col
+
+    Y = tsne(X, 2, data_dim, 20.0)
     pylab.scatter(Y[:, 0], Y[:, 1], 20, labels)
     pylab.show()

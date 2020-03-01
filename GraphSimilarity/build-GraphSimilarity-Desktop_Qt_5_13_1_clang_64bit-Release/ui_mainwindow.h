@@ -43,8 +43,9 @@ public:
     QPushButton *btnSave;
     QPushButton *btnOpen;
     QLabel *graphletId;
+    QComboBox *cbxGFDCalc;
     QComboBox *cbxKernel;
-    QComboBox *comboSearchRange;
+    QComboBox *cbxRange;
     QWidget *container;
     QHBoxLayout *horizontalLayout;
     Widget *m_widget_0;
@@ -57,7 +58,7 @@ public:
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
-        MainWindow->resize(800, 600);
+        MainWindow->resize(842, 600);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QString::fromUtf8("centralwidget"));
         verticalLayout = new QVBoxLayout(centralwidget);
@@ -125,6 +126,13 @@ public:
 
         verticalLayout->addWidget(groupBox);
 
+        cbxGFDCalc = new QComboBox(centralwidget);
+        cbxGFDCalc->addItem(QString());
+        cbxGFDCalc->addItem(QString());
+        cbxGFDCalc->setObjectName(QString::fromUtf8("cbxGFDCalc"));
+
+        verticalLayout->addWidget(cbxGFDCalc);
+
         cbxKernel = new QComboBox(centralwidget);
         cbxKernel->addItem(QString());
         cbxKernel->addItem(QString());
@@ -133,10 +141,10 @@ public:
 
         verticalLayout->addWidget(cbxKernel);
 
-        comboSearchRange = new QComboBox(centralwidget);
-        comboSearchRange->setObjectName(QString::fromUtf8("comboSearchRange"));
+        cbxRange = new QComboBox(centralwidget);
+        cbxRange->setObjectName(QString::fromUtf8("cbxRange"));
 
-        verticalLayout->addWidget(comboSearchRange);
+        verticalLayout->addWidget(cbxRange);
 
         container = new QWidget(centralwidget);
         container->setObjectName(QString::fromUtf8("container"));
@@ -161,11 +169,11 @@ public:
 
         verticalLayout->addWidget(fileListBox);
 
-        verticalLayout->setStretch(3, 20);
+        verticalLayout->setStretch(4, 20);
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
-        menubar->setGeometry(QRect(0, 0, 800, 22));
+        menubar->setGeometry(QRect(0, 0, 842, 22));
         MainWindow->setMenuBar(menubar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QString::fromUtf8("statusbar"));
@@ -190,6 +198,9 @@ public:
         btnSave->setText(QCoreApplication::translate("MainWindow", "Save", nullptr));
         btnOpen->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
         graphletId->setText(QCoreApplication::translate("MainWindow", "graphlet:", nullptr));
+        cbxGFDCalc->setItemText(0, QCoreApplication::translate("MainWindow", "Accumulate", nullptr));
+        cbxGFDCalc->setItemText(1, QCoreApplication::translate("MainWindow", "Concatenate", nullptr));
+
         cbxKernel->setItemText(0, QCoreApplication::translate("MainWindow", "Cosine Similarity", nullptr));
         cbxKernel->setItemText(1, QCoreApplication::translate("MainWindow", "RBF", nullptr));
         cbxKernel->setItemText(2, QCoreApplication::translate("MainWindow", "Laplacian", nullptr));

@@ -131,7 +131,8 @@ void GLWidget::paintGL()
         float y = height() - (tmp2.y()*height()/2 +height()/2);
 
 //        qDebug() << x << " " << y;
-        labelPos.append(QPair<int, QVector2D>(i, QVector2D(x, y)));
+//        labelPos.append(QPair<int, QVector2D>(i, QVector2D(x, y)));
+        labelPos.append(QPair<int, QVector2D>(m_objloader->m_nodes[i].label, QVector2D(x, y)));
     }
 
     // emit the signal to MainWindow

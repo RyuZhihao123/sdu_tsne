@@ -1,7 +1,7 @@
 #include "graph.h"
 #include <QDebug>
 
-int glet_search_range = 10;                // user setting searching range
+int glet_search_range = 6;                // user setting searching range
 
 Graph::Graph()
 {
@@ -444,20 +444,18 @@ QVector<float> Graph::GetfeatureVectorAll(int sid)
     }
     //
 
+    QString str;
     GFD gfd(ALL_GRAPHLET);
     int count = 0;
     for (int i = 0; i < gfd.size(); i++)
     {
         gfd[i] = neighborGlets[i].size();
+        str += QString::number(gfd[i]) + ", ";
         count += neighborGlets[i].size();
     }
 
-//    QString str;
-//    for (int i = 0; i < gfd.size(); i++)
-//    {
-//        str += QString::number(gfd[i]) + ", ";
-//    }
-//    qDebug()<< str;
+
+//    qDebug() << "featurevector of " << sid << ": " << str;
 
     if (count != 0)
     {

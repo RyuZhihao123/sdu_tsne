@@ -42,9 +42,6 @@ def Hbeta(D=np.array([]), beta=1.0):
     return H, P
 
 def NearestNeighbors():
-    tree_0 = KDTree(points)
-    dists_0, indices_0 = tree_0.query(
-        points, k=config.k_closest_count)  # 一口气对所有points构建knn
     pass
 
 
@@ -487,7 +484,9 @@ class BH_TSNE():
                     .format(n_neighbors))
 
         # Find the nearest neighbors for every point
-        knn = NearestNeighbors(n_neighbors=n_neighbors,
+        knn = NearestNeighbors(algorithm='auto',
+                                n_jobs=self.n_jobs,
+                                n_neighbors=n_neighbors,
                                 metric=self.metric)
         t0 = time()
         knn.fit(X)

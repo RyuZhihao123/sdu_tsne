@@ -13,9 +13,11 @@ MainWindow::MainWindow(QWidget *parent)
         ui->comboBox->addItem(QString("Graphlet:%1").arg(i+1));
     }
     for (int i = 0; i < MAX_SEARCH_RANGE; i++) {
-        ui->comboSearchRange->addItem(QString("neighborhood:%1").arg(i+1));
+        ui->cbxRange->addItem(QString("neighborhood:%1").arg(i+1));
     }
-    ui->comboSearchRange->setCurrentIndex(glet_search_range-1);
+
+    ui->cbxRange->setCurrentIndex(glet_search_range-1);
+    ui->cbxGFDCalc->setCurrentIndex(m_gfd_cal);
 
     //    ui->comboBox->setCurrentIndex(19);
 
@@ -24,9 +26,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->btnCalculate,SIGNAL(clicked(bool)),this,SLOT(slot_calculateGraphLet()));
     connect(ui->btnNext,SIGNAL(clicked(bool)),this,SLOT(slot_btnNext()));
-
-    //    ui->m_widget_0 = new Widget(ui->centralwidget);
-    //    m_widget_1 = new Widget(ui->centralwidget);
 
     m_filenames.clear();
 }
@@ -352,15 +351,17 @@ void MainWindow::on_btnSim_clicked()
     QStringList dirList0 = finfo0.dir().path().split("/");
     QStringList dirList1 = finfo1.dir().path().split("/");
 
-    // /Users/joe/Codes/QtProjects/t-sne for comparison/data/highdims/dim3/size100/2nn
+    // /Users/joe/Codes/QtProjects/t-sne for comparison/data/data1/highdims/dim3/size100/2nn
     QString knn = dirList0[dirList0.size()-1];
     QString sizem = dirList0[dirList0.size()-2];
     QString dimn = dirList0[dirList0.size()-3];
+    QString data_type = dirList0[dirList0.size()-5];
 
     int d0 = (finfo0.baseName().split("_")[1]).toInt();
     int d1 = (finfo1.baseName().split("_")[1]).toInt();
 
-    QString dir = QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/qt_sim/%1/%2/%3/").arg(dimn).arg(sizem).arg(knn);
+    // we also consider searching range into similarities
+    QString dir = QString("/Users/joe/Codes/QtProjects/t-sne for comparison/data/%1/qt_sim/%2/%3/%4/level%5/%6").arg(data_type).arg(dimn).arg(sizem).arg(knn).arg(glet_search_range).arg(ui->cbxGFDCalc->itemText(m_gfd_cal));
     QDir fileDir(dir);
     if (!fileDir.exists())
     {
@@ -381,11 +382,27 @@ QVector<float> MainWindow::calcPointSims(Graph &g1, Graph &g2)
 
     for (int i = 0; i < g1.nodeNum(); i++)
     {
-        QVector<float> vi_1 = g1.GetfeatureVector(i);
-        QVector<float> vi_2 = g2.GetfeatureVector(i);
+        QVector<float> vi_1;
+        QVector<float> vi_2;
+
+//#ifdef STACK_GFD
+        if (m_gfd_cal == CONCAT)
+        {
+            vi_1 = g1.GetfeatureVector(i);
+            vi_2 = g2.GetfeatureVector(i);
+        }
+//#else
+        else
+        {
+            vi_1 = g1.GetfeatureVectorAll(i);
+            vi_2 = g2.GetfeatureVectorAll(i);
+        }
+//#endif
+
         float s = applyKernel(vi_1, vi_2, m_kernel);
 
-        qDebug() <<  i << ": " << s;
+//        qDebug() <<  i << ": " << s;
+        qDebug() <<  i << "," << s;
         matchScores.push_back(s);
     }
 
@@ -418,7 +435,7 @@ void MainWindow::on_btnLoadFmData_clicked()
     ui->fileListBox->addItem(fileName);
 }
 
-void MainWindow::on_comboSearchRange_activated(int index)
+void MainWindow::on_cbxRange_activated(int index)
 {
     glet_search_range = index + 1;
     qDebug() << "set searching range: " << glet_search_range;
@@ -504,4 +521,9 @@ float MainWindow::L2Distance(const QVector<float> &vec1, const QVector<float> &v
         sum += (vec1[i]-vec2[i])*(vec1[i]-vec2[i]);
     }
     return sum;
+}
+
+void MainWindow::on_cbxGFDCalc_activated(int index)
+{
+    m_gfd_cal = GFDCalc(index);
 }
